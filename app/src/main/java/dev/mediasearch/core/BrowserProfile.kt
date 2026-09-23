@@ -14,24 +14,11 @@ object BrowserProfile {
     fun userAgent(platform: Platform, default: String): String =
         if (desktop(platform)) desktopUserAgent(default) else default
 
-    fun visibleUserAgent(default: String, desktop: Boolean): String =
-        if (desktop) desktopUserAgent(default) else default
+    /** Content pages always request the desktop site; the preference only changes its viewport. */
+    fun visibleUserAgent(default: String, desktop: Boolean): String = desktopUserAgent(default)
 
     /** Layout choice for visible content pages only; crawler requests retain their known profile. */
-    fun visiblePageUrl(platform: Platform, url: String, desktop: Boolean): String {
-        if (desktop) return pageUrl(platform, url)
-        if (!allowed(platform, url)) return url
-        val uri = URI(url)
-        val path = uri.rawPath.orEmpty().ifEmpty { "/" }
-        return when {
-            platform == Platform.BILIBILI && uri.host in setOf("www.bilibili.com", "bilibili.com") &&
-                (path == "/" || path.startsWith("/video/")) ->
-                "https://m.bilibili.com" + path +
-                    uri.rawQuery?.let { "?$it" }.orEmpty() + uri.rawFragment?.let { "#$it" }.orEmpty()
-            platform == Platform.XHS && path == "/" -> "https://www.xiaohongshu.com/explore"
-            else -> url
-        }
-    }
+    fun visiblePageUrl(platform: Platform, url: String, desktop: Boolean): String = pageUrl(platform, url)
 
     fun secureVisibleNavigationUrl(platform: Platform, url: String, desktop: Boolean): String? {
         val secure = if (url.startsWith("http://", ignoreCase = true)) "https://" + url.substring(7) else url

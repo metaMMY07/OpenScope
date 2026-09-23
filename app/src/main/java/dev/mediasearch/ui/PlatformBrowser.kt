@@ -29,16 +29,16 @@ import kotlinx.coroutines.*
 fun PlatformBrowser(platform: Platform, initialUrl: String, login: Boolean, model: SearchViewModel,
                     onClose: () -> Unit, onVerified: () -> Unit) {
     val preferences = LocalThemePreferences.current
-    // Login keeps the platform-tested profile; the setting changes readable content pages only.
-    val desktop = if (login) BrowserProfile.desktop(platform) else preferences.desktopWebPages
+    // Login keeps the platform-tested profile; the setting changes the content page viewport only.
+    val wideLayout = if (login) BrowserProfile.desktop(platform) else preferences.desktopWebPages
     var webView by remember { mutableStateOf<WebView?>(null) }
     var progress by remember { mutableFloatStateOf(0f) }
-    val pageUrl = remember(platform, initialUrl, desktop) { BrowserProfile.visiblePageUrl(platform, initialUrl, desktop) }
+    val pageUrl = remember(platform, initialUrl) { BrowserProfile.visiblePageUrl(platform, initialUrl, wideLayout) }
     var host by remember { mutableStateOf(Uri.parse(pageUrl).host.orEmpty()) }
     var error by remember { mutableStateOf<String?>(null) }
-    var loginMessage by remember { mutableStateOf(if (desktop) "请使用已有账号的手机号或密码登录；可双指缩放页面" else "请使用已有账号，在平台官方页面登录") }
+    var loginMessage by remember { mutableStateOf(if (BrowserProfile.desktop(platform)) "请使用已有账号的手机号或密码登录；可双指缩放页面" else "请使用已有账号，在平台官方页面登录") }
     var pageFinished by remember { mutableIntStateOf(0) }
-    var loginRequested by remember { mutableStateOf(login && desktop) }
+    var loginRequested by remember { mutableStateOf(login && BrowserProfile.desktop(platform)) }
     val scope = rememberCoroutineScope()
     val currentOnVerified by rememberUpdatedState(onVerified)
 
@@ -96,7 +96,7 @@ fun PlatformBrowser(platform: Platform, initialUrl: String, login: Boolean, mode
                     loginMessage = "已登录"
                     if (login) { delay(500); currentOnVerified(); break }
                 } else {
-                    if (pageAuth == false && (login || desktop)) model.sessions.mark(platform, SessionStatus.MISSING)
+                    if (pageAuth == false && (login || wideLayout)) model.sessions.mark(platform, SessionStatus.MISSING)
                     loginMessage = if (platform == Platform.DOUYIN && captured) "会话已保存，可关闭页面后尝试搜索；登录状态尚待确认" else "请在官方页面完成登录"
                 }
             } catch (e: TimeoutCancellationException) {
@@ -111,13 +111,13 @@ fun PlatformBrowser(platform: Platform, initialUrl: String, login: Boolean, mode
         topBar = {
             TopAppBar(title = { Column {
                 Text(if (login) "登录${platform.label}" else platform.label, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                Text("$host · ${if (desktop) "电脑版" else "移动版"}", style = MaterialTheme.typography.labelSmall,
+                Text("$host · ${if (login) "官方登录" else if (wideLayout) "平板适配" else "手机适配"}", style = MaterialTheme.typography.labelSmall,
                     maxLines = 1, overflow = TextOverflow.Ellipsis)
             } },
                 navigationIcon = { TextButton(onClick = { back() }) { Text("返回") } },
                 actions = {
                     TextButton(onClick = { finish() }) { Text("关闭") }
-                    if (desktop) TextButton(onClick = { loginRequested = true }) { Text("登录") }
+                    if (BrowserProfile.desktop(platform)) TextButton(onClick = { loginRequested = true }) { Text("登录") }
                     TextButton(onClick = { error = null; webView?.reload() }) { Text("刷新") }
                 })
         }
@@ -140,20 +140,28 @@ fun PlatformBrowser(platform: Platform, initialUrl: String, login: Boolean, mode
                     webView = this
                     settings.javaScriptEnabled = true
                     settings.domStorageEnabled = true
-                    settings.userAgentString = BrowserProfile.visibleUserAgent(WebSettings.getDefaultUserAgent(context), desktop)
+                    val defaultUserAgent = WebSettings.getDefaultUserAgent(context)
+                    settings.userAgentString = if (login) BrowserProfile.userAgent(platform, defaultUserAgent)
+                        else BrowserProfile.visibleUserAgent(defaultUserAgent, wideLayout)
                     settings.useWideViewPort = true
-                    settings.loadWithOverviewMode = desktop
+                    settings.loadWithOverviewMode = wideLayout
                     settings.setSupportZoom(true)
                     settings.builtInZoomControls = true
                     settings.displayZoomControls = false
-                    settings.textZoom = 100
-                    val viewportScript = if (desktop) context.assets.open("browser/desktop-viewport.js").bufferedReader().use { it.readText() } else null
+                    settings.textZoom = if (wideLayout) 100 else 115
+                    val viewportAsset = if (wideLayout) "browser/desktop-viewport.js" else "browser/phone-viewport.js"
+                    val viewportScript = context.assets.open(viewportAsset).bufferedReader().use { it.readText() }
                     val startScriptSupported = WebViewFeature.isFeatureSupported(WebViewFeature.DOCUMENT_START_SCRIPT)
                     if (viewportScript != null && startScriptSupported) {
-                        val root = when (platform) { Platform.BILIBILI -> "bilibili.com"; Platform.DOUYIN -> "douyin.com"; else -> "xiaohongshu.com" }
+                        val root = when (platform) {
+                            Platform.BILIBILI -> "bilibili.com"
+                            Platform.ZHIHU -> "zhihu.com"
+                            Platform.XHS -> "xiaohongshu.com"
+                            Platform.DOUYIN -> "douyin.com"
+                        }
                         WebViewCompat.addDocumentStartJavaScript(this, viewportScript, setOf("https://$root", "https://*.$root"))
                     }
-                    if (desktop && WebViewFeature.isFeatureSupported(WebViewFeature.USER_AGENT_METADATA)) {
+                    if ((!login || BrowserProfile.desktop(platform)) && WebViewFeature.isFeatureSupported(WebViewFeature.USER_AGENT_METADATA)) {
                         // Keep Chromium's installed version while requesting the desktop presentation.
                         val version = Regex("Chrome/([0-9.]+)").find(settings.userAgentString)?.groupValues?.get(1)
                         val metadata = UserAgentMetadata.Builder()
@@ -184,7 +192,7 @@ fun PlatformBrowser(platform: Platform, initialUrl: String, login: Boolean, mode
                             // Embedded HTTPS authentication frames use the browser's normal origin isolation.
                             // Only top-level navigation is restricted to this platform; there is no native bridge.
                             if (!request.isForMainFrame) return request.url.scheme != "https"
-                            val targetUrl = BrowserProfile.secureVisibleNavigationUrl(platform, request.url.toString(), desktop)
+                            val targetUrl = BrowserProfile.secureVisibleNavigationUrl(platform, request.url.toString(), wideLayout)
                             if (targetUrl == null) {
                                 if (dev.mediasearch.BuildConfig.DEBUG) android.util.Log.d("PageNavigation", "blocked ${request.url.scheme}://${request.url.host}${request.url.path}")
                                 if (request.isForMainFrame) error = "该链接无法在此页面打开，请返回继续浏览"

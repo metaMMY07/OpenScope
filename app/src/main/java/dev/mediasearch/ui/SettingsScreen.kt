@@ -94,18 +94,18 @@ fun SettingsScreen(onOpenAbout: () -> Unit, modifier: Modifier = Modifier, onDia
             ) {
                 Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text("官方网页版本", style = MaterialTheme.typography.titleMedium)
-                    Text("手机默认移动网页，平板默认电脑网页。仅影响打开的内容网页；登录和搜索取数沿用兼容路线。",
+                    Text("两种模式都打开官方电脑网页；手机模式按屏幕宽度和较大字号适配，平板模式保留更宽布局。登录和搜索取数沿用兼容路线。",
                         color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         androidx.compose.material3.FilterChip(
                             selected = !preferences.desktopWebPages,
                             onClick = { preferences.useDesktopWebPages(false) },
-                            label = { Text("移动网页") }
+                            label = { Text("手机页面") }
                         )
                         androidx.compose.material3.FilterChip(
                             selected = preferences.desktopWebPages,
                             onClick = { preferences.useDesktopWebPages(true) },
-                            label = { Text("电脑网页") }
+                            label = { Text("平板页面") }
                         )
                     }
                 }
