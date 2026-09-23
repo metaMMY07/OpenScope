@@ -11,8 +11,15 @@ object PageSessionProbe {
     suspend fun authenticated(view: WebView, platform: Platform): Boolean? {
         if (!BrowserProfile.allowed(platform, view.url.orEmpty())) return null
         val script = when (platform) {
-            // A session cookie alone is not a verified account. No stable mobile auth probe yet.
-            Platform.DOUYIN -> "null"
+            Platform.DOUYIN -> """(() => {
+                const visible = e => !!e && e.getBoundingClientRect().width > 0 && e.getBoundingClientRect().height > 0;
+                // The desktop header links the signed-in avatar to /user/self.
+                if ([...document.querySelectorAll('header a[href*="/user/self"] img')].some(visible)) return true;
+                if ([...document.querySelectorAll('input[placeholder*=手机号],input[type=password]')].some(visible)) return false;
+                const header = document.querySelector('header');
+                if (header && [...header.querySelectorAll('button,a,span')].some(e => visible(e) && e.textContent?.trim() === '登录')) return false;
+                return null;
+            })()"""
             Platform.XHS -> """(() => {
                 const state = window.__INITIAL_STATE__?.user?.loggedIn;
                 const value = state?.value ?? state;

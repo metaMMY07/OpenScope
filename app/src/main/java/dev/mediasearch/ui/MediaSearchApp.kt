@@ -315,7 +315,7 @@ fun MediaSearchApp(model: SearchViewModel) {
                                     if (platform == Platform.XHS) {
                                         Text("使用官方网页会话搜索笔记。", style = MaterialTheme.typography.bodySmall)
                                     }
-                                    if (platform == Platform.DOUYIN) Text("实验性网页搜索；会话保存不代表登录已确认。", style = MaterialTheme.typography.bodySmall)
+                                    if (platform == Platform.DOUYIN) Text("实验性网页搜索；结果与登录可用性以官方页面为准。", style = MaterialTheme.typography.bodySmall)
                                     Button(onClick = { login(platform) }) { Text(accountActionLabel(sessions[platform])) }
                                 }
                             }

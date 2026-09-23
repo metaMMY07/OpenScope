@@ -1,4 +1,6 @@
-# 接手入口：OpenScope Android 本地开发版 0.4.1
+# 接手入口：OpenScope Android 本地开发版 0.4.2
+
+**2026-09-23 抖音登录态实测：**改进官方搜索页卡片解析与登录状态识别后，模拟器 App 内已显示抖音“已登录”。仅勾选抖音，搜索“iPhone”返回 16 条相关视频（6185ms），含标题、作者、封面和点赞数；搜索“Android”返回 15 条但明显偏题，系官方 WebView 页面实际内容，不可称为稳定相关搜索。最新详情和 APK 见 [docs/release-0.4.2.md](docs/release-0.4.2.md)。
 
 **2026-09-23 后续更新：**源码与 APK 已升级到 0.4.1。四平台官方图标、左侧缩略图和更清晰的结果/收藏卡片已实现；发布与互动数据按平台实际字段显示。最新记录见 [docs/release-0.4.1.md](docs/release-0.4.1.md) 与 [docs/brand-assets.md](docs/brand-assets.md)。下方 0.4.0 与 0.3.0 条目均为历史记录。
 

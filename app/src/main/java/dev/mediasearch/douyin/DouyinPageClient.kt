@@ -131,7 +131,11 @@ class DouyinPageClient(private val context: Context) {
                 val id = Regex("/video/([0-9]{8,30})/?$").find(java.net.URI(url).path)?.groupValues?.get(1) ?: return@mapNotNull null
                 val title = row.optString("title").trim()
                 if (title.isEmpty()) return@mapNotNull null
-                SearchItem(id, Platform.DOUYIN, title, row.optString("author"), "", url, row.optString("thumbnail"), row.optString("metric"))
+                val metric = row.optString("metric")
+                val likes = displayCount(metric)
+                SearchItem(id, Platform.DOUYIN, title, row.optString("author"), "", url,
+                    row.optString("thumbnail"), metric, engagement = likes,
+                    metricCounts = likes?.let { mapOf("likes" to it) }.orEmpty())
             }.distinctBy { it.id }
         }
     }

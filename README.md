@@ -15,7 +15,11 @@ Kotlin + Jetpack Compose + Material 3 聚合搜索 Android 客户端，面向 Bi
 | --- | --- | --- |
 | ![OpenScope 搜索页](docs/images/openscope-search.jpg) | ![OpenScope 设置页](docs/images/openscope-settings.jpg) | ![OpenScope 账号页](docs/images/openscope-accounts.jpg) |
 
-## 本地开发版：0.4.1
+## 本地开发版：0.4.2
+
+本地 ARM64 安装包：[OpenScope-0.4.2-arm64-v8a.apk](artifacts/OpenScope-0.4.2-arm64-v8a.apk)。0.4.2 修复抖音登录识别与官方搜索页视频卡片读取；登录态模拟器对“iPhone”返回 16 条相关结果，耗时 6185ms。该来源仍为默认关闭的实验能力，官方页对“Android”的一次搜索返回了明显不相关的内容，不承诺所有关键词稳定。详见 [0.4.2 验收](docs/release-0.4.2.md)。
+
+## 0.4.1 历史记录
 
 本地 ARM64 安装包：[OpenScope-0.4.1-arm64-v8a.apk](artifacts/OpenScope-0.4.1-arm64-v8a.apk)。0.4.1 将四个平台的占位字符换成官方图标，搜索与内容库卡片增加左侧封面、清楚的边框和可用的发布日期、播放、点赞、收藏等数据；缺失字段不编造。详见 [0.4.1 验收](docs/release-0.4.1.md)。0.4.0 的内容库、导出与抖音实验入口记录见 [功能对照](docs/release-0.4.0.md)。这两个版本均未公开发布。
 
@@ -48,6 +52,7 @@ pwsh -File .\scripts\build-local.ps1 -Target Verify
 | Bilibili | 原生 WBI/Cronet；未登录页面及 20 条搜索与缓冲展开样本；认证校验代码已接入 | 真实账号登录及会话恢复、持续搜索和蜂窝稳定性 |
 | 知乎 | 官方登录页渲染；本地 JS 签名 3 个固定向量 | 真实账号验证、真实搜索、重启和切网恢复 |
 | 小红书 | 官方网页 DOM 路线已实现；已验证 HTTPS `search_result` 参数保留、未登录时显示 App 内登录入口 | 用户手机上的真实账号登录/认证、卡片与分页端到端闭环；原生聚合私有签名未移植 |
+| 抖音（实验，默认关闭） | App 内官方网页登录后账号状态可识别；模拟器登录态搜索 `iPhone` 返回 16 条相关视频（6185ms） | `Android` 一次返回明显偏题内容；真实手机、蜂窝网络、分页及长期稳定性未验证 |
 
 已有账号不等于本 App 已取得有效会话。真实凭证由用户在官方页面输入；账号 scope 扫描、官方验证和持久化凭证指纹用于校验状态，不能仅凭 cookie 名称存在当成认证成功。目标真机、蜂窝网络、耗电及新版冷/热延迟未完成验收。
 
@@ -55,7 +60,8 @@ pwsh -File .\scripts\build-local.ps1 -Target Verify
 
 - [HANDOFF.md](HANDOFF.md)：接手顺序、当前交付与待办。
 - [ASTRA-HANDOFF.md](ASTRA-HANDOFF.md)：D 盘迁移、远端发布和继续开发入口。
-- [docs/release-0.4.1.md](docs/release-0.4.1.md)：当前本地开发版视觉与数据验收。
+- [docs/release-0.4.2.md](docs/release-0.4.2.md)：当前本地开发版抖音登录态搜索验收。
+- [docs/release-0.4.1.md](docs/release-0.4.1.md)：上一版视觉与数据验收。
 - [docs/release-0.4.0.md](docs/release-0.4.0.md)：SiYe 功能对照与上一版验收。
 - [docs/release-0.3.0.md](docs/release-0.3.0.md)：公开版 0.3.0 包体、签名、测试与截图证据。
 - [docs/release-0.2.0.md](docs/release-0.2.0.md)：上一版历史验收记录。

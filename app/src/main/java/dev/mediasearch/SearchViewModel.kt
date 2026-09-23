@@ -251,7 +251,10 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
 
     suspend fun verifyLogin(platform: Platform): Boolean {
         if (!sessions.scan(platform)) return false
-        if (platform == Platform.DOUYIN) return false // Cookie capture is not authentication proof.
+        if (platform == Platform.DOUYIN) {
+            // scan() only restores a fingerprint previously confirmed by the official page.
+            return sessions.statuses.value[platform] == SessionStatus.VERIFIED
+        }
         if (platform == Platform.XHS) {
             if (sessions.statuses.value[platform] == SessionStatus.VERIFIED) return true
             val result = xhsAccount.verifySession()
