@@ -1,10 +1,10 @@
 # OpenScope
 
-> 本地开发版 0.4.4 已修复极简首页的底部导航与深色主题对比度，并使用新的版本代码支持覆盖安装。见 [0.4.4 验收](docs/release-0.4.4.md)。下方公开下载链接仍指向已发布的 0.4.2。
+> OpenScope 0.4.4 已发布，修复极简首页的底部导航与深色主题对比度，并使用新的版本代码支持覆盖安装。见 [0.4.4 验收](docs/release-0.4.4.md)。
 
 **面向 Android 的多平台内容搜索客户端。**输入一个关键词，可聚合浏览 Bilibili、知乎和小红书的公开内容；抖音作为可选实验来源。
 
-[下载最新 APK](https://github.com/metaMMY07/OpenScope/releases/latest) · [查看所有版本](https://github.com/metaMMY07/OpenScope/releases) · [查看 0.4.2 验收记录](docs/release-0.4.2.md)
+[下载最新 APK](https://github.com/metaMMY07/OpenScope/releases/latest) · [查看所有版本](https://github.com/metaMMY07/OpenScope/releases) · [查看 0.4.4 验收记录](docs/release-0.4.4.md)
 
 ![GitHub Release](https://img.shields.io/github/v/release/metaMMY07/OpenScope?display_name=tag) ![Android 10+](https://img.shields.io/badge/Android-10%2B-3DDC84?logo=android&logoColor=white) ![Kotlin](https://img.shields.io/badge/Kotlin-Compose-7F52FF?logo=kotlin&logoColor=white)
 
