@@ -9,6 +9,13 @@ import androidx.compose.ui.unit.dp
 
 /** Small filled Material-style vectors kept local so the app does not need extended icons. */
 object AppIcons {
+    val Bookmark: ImageVector by lazy {
+        ImageVector.Builder(name = "Bookmark", defaultWidth = 24.dp, defaultHeight = 24.dp, viewportWidth = 24f, viewportHeight = 24f).apply {
+            path(fill = SolidColor(Color.Black)) {
+                moveTo(6f, 3f); lineTo(18f, 3f); lineTo(18f, 21f); lineTo(12f, 17f); lineTo(6f, 21f); close()
+            }
+        }.build()
+    }
     val Explore: ImageVector by lazy {
         ImageVector.Builder(
             name = "Explore",

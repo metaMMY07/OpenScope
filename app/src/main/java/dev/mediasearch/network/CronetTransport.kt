@@ -14,7 +14,7 @@ import kotlinx.coroutines.*
 import org.chromium.net.*
 
 /** One embedded engine; no Google Play services, local server or credential logging. */
-class CronetTransport(private val context: Context, private val sessions: SessionStore) : HttpTransport {
+class CronetTransport(private val context: Context, private val sessions: SessionStore, private val useCookies: Boolean = true) : HttpTransport {
     private val executor = Executors.newFixedThreadPool(2)
     private val lifecycleLock = Any()
     private val requests = mutableSetOf<UrlRequest>()
@@ -54,17 +54,18 @@ class CronetTransport(private val context: Context, private val sessions: Sessio
             val platform = when (URI(current).host) {
                 "www.bilibili.com", "m.bilibili.com", "api.bilibili.com" -> Platform.BILIBILI
                 "www.xiaohongshu.com", "edith.xiaohongshu.com" -> Platform.XHS
+                "www.douyin.com", "www.iesdouyin.com" -> Platform.DOUYIN
                 else -> Platform.ZHIHU
             }
             if (requestHeaders.keys.none { it.equals("user-agent", true) }) {
                 requestHeaders["User-Agent"] = BrowserProfile.userAgent(platform, defaultUserAgent)
             }
             // An explicit adapter snapshot is only used for the original request. Never forward it on redirects.
-            val cookie = if (current == url) headers.entries.firstOrNull { it.key.equals("cookie", true) }?.value
+            val cookie = if (!useCookies) "" else if (current == url) headers.entries.firstOrNull { it.key.equals("cookie", true) }?.value
                 ?: sessions.cookies(current) else sessions.cookies(current)
             if (cookie.isNotBlank()) requestHeaders["Cookie"] = cookie
             val response = withContext(Dispatchers.IO) { request(current, requestHeaders) }
-            sessions.accept(current, response.headers)
+            if (useCookies) sessions.accept(current, response.headers)
             if (response.status !in setOf(301, 302, 303, 307, 308)) return@withTimeout response
             val location = response.headers.entries.firstOrNull { it.key.equals("location", true) }?.value?.firstOrNull()
                 ?: return@withTimeout response
@@ -143,6 +144,6 @@ class CronetTransport(private val context: Context, private val sessions: Sessio
     }
 
     companion object {
-        private val API_HOSTS = setOf("www.bilibili.com", "m.bilibili.com", "api.bilibili.com", "www.zhihu.com", "www.xiaohongshu.com", "edith.xiaohongshu.com")
+        private val API_HOSTS = setOf("www.bilibili.com", "m.bilibili.com", "api.bilibili.com", "www.zhihu.com", "www.xiaohongshu.com", "edith.xiaohongshu.com", "www.douyin.com", "www.iesdouyin.com")
     }
 }

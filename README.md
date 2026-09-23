@@ -1,13 +1,13 @@
 # OpenScope Android
 
-Kotlin + Jetpack Compose + Material 3 聚合搜索验证项目，面向 Bilibili、知乎、小红书。用户已有平台账号，通过 App 内官方 WebView 登录；不依赖官方 App 自动共享会话，不需要 PC、Termux 或 root。
+Kotlin + Jetpack Compose + Material 3 聚合搜索 Android 客户端，面向 Bilibili、知乎、小红书，另有默认关闭的抖音实验入口。用户已有平台账号，通过 App 内官方 WebView 登录；不依赖官方 App 自动共享会话，不需要 PC、Termux 或 root。
 
 ## Contributors
 
 - [metaMMY07](https://github.com/metaMMY07) — Android implementation and release integration
 - [KellenGO](https://github.com/KellenGO) — MediaCrawler project collaboration
 
-本 Android 客户端源自 [KellenGO/MediaCrawler](https://github.com/KellenGO/MediaCrawler) 的聚合搜索方向；现以 OpenScope 形式独立发布。上游非商业学习许可证及平台使用边界仍然适用，详见 `app/src/main/assets/licenses/MediaCrawler-LICENSE.txt`。
+本 Android 客户端参考 [SiYe 主项目](https://github.com/KellenGO/SiYe) 与 [KellenGO/MediaCrawler](https://github.com/KellenGO/MediaCrawler) 的聚合搜索方向；OpenScope 以 Android 原生代码独立维护。上游非商业学习许可证及平台使用边界仍然适用，详见 `app/src/main/assets/licenses/MediaCrawler-LICENSE.txt`。
 
 ## 界面预览
 
@@ -15,17 +15,21 @@ Kotlin + Jetpack Compose + Material 3 聚合搜索验证项目，面向 Bilibili
 | --- | --- | --- |
 | ![OpenScope 搜索页](docs/images/openscope-search.jpg) | ![OpenScope 设置页](docs/images/openscope-settings.jpg) | ![OpenScope 账号页](docs/images/openscope-accounts.jpg) |
 
+## 本地开发版：0.4.0
+
+本地 ARM64 安装包：[OpenScope-0.4.0-arm64-v8a.apk](artifacts/OpenScope-0.4.0-arm64-v8a.apk)。新增本地内容库、收藏/稍后/历史、文件夹与备注、备份及导出、结果筛选排序、三平台公开热搜、B 站平台收藏有限导入，以及抖音实验入口。详见 [0.4.0 验收与功能对照](docs/release-0.4.0.md)。此版本尚未公开发布；抖音和小红书已登录搜索仍待真实账号验证。
+
 ## 最新公开版本：v0.1.1
 
 GitHub Release：[OpenScope Android v0.1.1](https://github.com/metaMMY07/MediaCrawler/releases/tag/v0.1.1)。侧载测试包：[OpenScope-0.3.0-arm64-v8a.apk](https://github.com/metaMMY07/MediaCrawler/releases/download/v0.1.1/OpenScope-0.3.0-arm64-v8a.apk)，10,434,637 bytes（10.43 MB），versionCode 3。APK 内部 versionName 保留为 0.3.0；使用内部测试 debug 签名，可覆盖安装。
 
-本轮将应用改名为 OpenScope，移除好问题 hero 与建议内容。搜索列表每个平台初始显示 3 条，More 每次优先从已加载缓冲追加 3 条；返回搜索列表会保存滚动位置。Bilibili 的状态文案统一为未登录和已登录，不再把未登录状态标成匿名或宣称无需登录。
+0.3.0 将应用改名为 OpenScope，移除好问题 hero 与建议内容。搜索列表每个平台初始显示 3 条，More 每次优先从已加载缓冲追加 3 条；返回搜索列表会保存滚动位置。Bilibili 的状态文案统一为未登录和已登录，不再把未登录状态标成匿名或宣称无需登录。
 
 账号 scope 扫描、官方验证和凭证指纹持久化已经接入；仅凭 cookie 存在不能宣称已登录。小红书改走官方网页 DOM 搜索路线，不移植私有签名；修复 `search_result` 跳到 HTTP 导致白屏的问题，升级为 HTTPS 并保留查询参数，正确返回未登录状态并展示 App 内登录入口。真实账号登录/认证后的 XHS 卡片与分页仍待用户手机验证，不能宣称端到端成功。
 
-最新验收以 [docs/release-0.3.0.md](docs/release-0.3.0.md) 为准。旧版记录仍可查阅：[docs/release-0.2.0.md](docs/release-0.2.0.md)；更早的性能样本保留在 [docs/build-verified.md](docs/build-verified.md)，不能当作 0.3.0 实测数据。
+本地开发版验收以 [docs/release-0.4.0.md](docs/release-0.4.0.md) 为准。公开版与旧版记录见 [docs/release-0.3.0.md](docs/release-0.3.0.md)、[docs/release-0.2.0.md](docs/release-0.2.0.md)；更早的性能样本见 [docs/build-verified.md](docs/build-verified.md)，不能当作 0.4.0 实测数据。
 
-## 验证结果
+## 0.3.0 历史验证结果
 
 ```powershell
 pwsh -File .\scripts\build-local.ps1 -Target Verify
@@ -51,7 +55,8 @@ pwsh -File .\scripts\build-local.ps1 -Target Verify
 
 - [HANDOFF.md](HANDOFF.md)：接手顺序、当前交付与待办。
 - [ASTRA-HANDOFF.md](ASTRA-HANDOFF.md)：D 盘迁移、远端发布和继续开发入口。
-- [docs/release-0.3.0.md](docs/release-0.3.0.md)：0.3.0 包体、签名、测试与截图证据（最新记录）。
+- [docs/release-0.4.0.md](docs/release-0.4.0.md)：当前本地开发版验收与 SiYe 功能对照。
+- [docs/release-0.3.0.md](docs/release-0.3.0.md)：公开版 0.3.0 包体、签名、测试与截图证据。
 - [docs/release-0.2.0.md](docs/release-0.2.0.md)：上一版历史验收记录。
 - [docs/build-setup.md](docs/build-setup.md)：工具链说明。
 - [docs/zhihu-port.md](docs/zhihu-port.md)：知乎适配与签名桥。

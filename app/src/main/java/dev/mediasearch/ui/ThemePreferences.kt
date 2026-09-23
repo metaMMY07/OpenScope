@@ -90,6 +90,14 @@ class ThemePreferences(context: Context) {
     var palette by mutableStateOf(ThemePalette.fromKey(preferences.getString(KEY_PALETTE, ThemePalette.SAGE.key)))
         private set
 
+    var appearance by mutableStateOf(preferences.getString("appearance", "system") ?: "system")
+        private set
+    fun chooseAppearance(value: String) {
+        if (value !in setOf("system", "light", "dark")) return
+        appearance = value
+        preferences.edit().putString("appearance", value).apply()
+    }
+
     fun useSystemColors(enabled: Boolean) {
         useDynamicColors = enabled
         preferences.edit().putBoolean(KEY_DYNAMIC, enabled).apply()

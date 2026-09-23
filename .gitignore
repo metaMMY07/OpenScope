@@ -10,3 +10,4 @@ artifacts/
 *.keystore
 captures/
 .android-avd/
+.kotlin/

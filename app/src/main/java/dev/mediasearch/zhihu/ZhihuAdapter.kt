@@ -271,6 +271,8 @@ public class ZhihuAdapter(
                 url = url,
                 thumbnailUrl = thumbnail,
                 metric = metric,
+                publishedAt = objectValue.optLong("created_time", objectValue.optLong("created", 0)).takeIf { it > 0 },
+                engagement = objectValue.optLong("voteup_count", -1).takeIf { it >= 0 },
             )
         }
         if (supportedCount > 0 && result.isEmpty()) {

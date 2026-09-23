@@ -11,6 +11,8 @@ object PageSessionProbe {
     suspend fun authenticated(view: WebView, platform: Platform): Boolean? {
         if (!BrowserProfile.allowed(platform, view.url.orEmpty())) return null
         val script = when (platform) {
+            // A session cookie alone is not a verified account. No stable mobile auth probe yet.
+            Platform.DOUYIN -> "null"
             Platform.XHS -> """(() => {
                 const state = window.__INITIAL_STATE__?.user?.loggedIn;
                 const value = state?.value ?? state;

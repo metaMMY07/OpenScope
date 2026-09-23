@@ -52,7 +52,11 @@ fun PlatformBrowser(platform: Platform, initialUrl: String, login: Boolean, mode
     LaunchedEffect(pageFinished, loginRequested) {
         if (!loginRequested || pageFinished == 0) return@LaunchedEffect
         // Open the official dialog only. Never submit it or read credential values.
-        val selector = if (platform == Platform.BILIBILI) ".header-login-entry" else ".side-bar-component button.login-btn"
+        val selector = when (platform) {
+            Platform.BILIBILI -> ".header-login-entry"
+            Platform.DOUYIN -> "[data-e2e=top-login-button]"
+            else -> ".side-bar-component button.login-btn"
+        }
         repeat(8) {
             val view = webView ?: return@LaunchedEffect
             if (!BrowserProfile.allowed(platform, view.url.orEmpty())) return@LaunchedEffect
@@ -91,7 +95,7 @@ fun PlatformBrowser(platform: Platform, initialUrl: String, login: Boolean, mode
                     if (login) { delay(500); currentOnVerified(); break }
                 } else {
                     if (pageAuth == false) model.sessions.mark(platform, SessionStatus.MISSING)
-                    loginMessage = "请在官方页面完成登录"
+                    loginMessage = if (platform == Platform.DOUYIN && captured) "会话已保存，可关闭页面后尝试搜索；登录状态尚待确认" else "请在官方页面完成登录"
                 }
             } catch (e: TimeoutCancellationException) {
                 loginMessage = "验证超时；会话已保留，可返回后重试搜索"
@@ -143,7 +147,7 @@ fun PlatformBrowser(platform: Platform, initialUrl: String, login: Boolean, mode
                     val viewportScript = if (desktop) context.assets.open("browser/desktop-viewport.js").bufferedReader().use { it.readText() } else null
                     val startScriptSupported = WebViewFeature.isFeatureSupported(WebViewFeature.DOCUMENT_START_SCRIPT)
                     if (viewportScript != null && startScriptSupported) {
-                        val root = if (platform == Platform.BILIBILI) "bilibili.com" else "xiaohongshu.com"
+                        val root = when (platform) { Platform.BILIBILI -> "bilibili.com"; Platform.DOUYIN -> "douyin.com"; else -> "xiaohongshu.com" }
                         WebViewCompat.addDocumentStartJavaScript(this, viewportScript, setOf("https://$root", "https://*.$root"))
                     }
                     if (desktop && WebViewFeature.isFeatureSupported(WebViewFeature.USER_AGENT_METADATA)) {

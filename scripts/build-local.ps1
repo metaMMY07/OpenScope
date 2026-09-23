@@ -2,7 +2,7 @@
 param(
     [ValidateSet('Debug','Release','Test','Lint','Probe','Verify')][string]$Target = 'Debug',
     [string]$Jdk = $(if ($env:JAVA_HOME) { $env:JAVA_HOME } else { 'D:\CodexToolchains\jdk17\jdk-17.0.16+8' }),
-    [string]$Sdk = $(if ($env:ANDROID_HOME) { $env:ANDROID_HOME } else { 'C:\Users\30622\AppData\Local\Android\Sdk' })
+    [string]$Sdk = $(if ($env:ANDROID_HOME) { $env:ANDROID_HOME } elseif (Test-Path 'D:\Codex-Migrated\Android\Sdk') { 'D:\Codex-Migrated\Android\Sdk' } else { 'C:\Users\30622\AppData\Local\Android\Sdk' })
 )
 $ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path -Parent $PSScriptRoot

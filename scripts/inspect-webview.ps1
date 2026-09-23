@@ -5,12 +5,12 @@ param(
 )
 $ErrorActionPreference = 'Stop'
 if ($Serial -notmatch '^emulator-\d+$') { throw 'Development emulator only.' }
-$adb = 'C:\Users\30622\AppData\Local\Android\Sdk\platform-tools\adb.exe'
+$adb = if (Test-Path 'D:\Codex-Migrated\Android\Sdk\platform-tools\adb.exe') { 'D:\Codex-Migrated\Android\Sdk\platform-tools\adb.exe' } else { 'C:\Users\30622\AppData\Local\Android\Sdk\platform-tools\adb.exe' }
 $appProcessId = (& $adb -s $Serial shell pidof dev.mediasearch).Trim()
 if ($appProcessId -notmatch '^\d+$') { throw 'Open a page in the debug app first.' }
 & $adb -s $Serial forward tcp:9233 "localabstract:webview_devtools_remote_$appProcessId" | Out-Null
 $pages = @((Invoke-WebRequest http://127.0.0.1:9233/json -UseBasicParsing).Content | ConvertFrom-Json)
-$page = $pages | Where-Object { $_.url -match '^https://(www|m|passport)\.(bilibili|xiaohongshu|zhihu)\.com' } | Select-Object -First 1
+$page = $pages | Where-Object { $_.url -match '^https://(www|m|passport)\.(bilibili|xiaohongshu|zhihu|douyin)\.com' } | Select-Object -First 1
 if (-not $page) { throw 'No official visible page found in the debug WebView.' }
 $socket = [Net.WebSockets.ClientWebSocket]::new()
 $cancel = [Threading.CancellationTokenSource]::new(15000)

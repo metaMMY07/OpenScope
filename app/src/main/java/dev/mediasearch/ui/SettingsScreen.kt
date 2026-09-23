@@ -49,7 +49,7 @@ import androidx.compose.ui.unit.dp
 import dev.mediasearch.BuildConfig
 
 @Composable
-fun SettingsScreen(onOpenAbout: () -> Unit, modifier: Modifier = Modifier) {
+fun SettingsScreen(onOpenAbout: () -> Unit, modifier: Modifier = Modifier, onDiagnostics: () -> Unit = {}) {
     val preferences = LocalThemePreferences.current
     val dynamicSupported = android.os.Build.VERSION.SDK_INT >= 31
 
@@ -58,6 +58,15 @@ fun SettingsScreen(onOpenAbout: () -> Unit, modifier: Modifier = Modifier) {
         contentPadding = PaddingValues(start = 20.dp, end = 20.dp, bottom = 28.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        item {
+            Text("深浅模式", style = MaterialTheme.typography.titleMedium)
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                listOf("system" to "跟随系统", "light" to "浅色", "dark" to "深色").forEach { (key, label) ->
+                    androidx.compose.material3.FilterChip(selected = preferences.appearance == key,
+                        onClick = { preferences.chooseAppearance(key) }, label = { Text(label) })
+                }
+            }
+        }
         item {
             Text("外观", style = MaterialTheme.typography.headlineSmall)
             Spacer(Modifier.height(4.dp))
@@ -114,6 +123,8 @@ fun SettingsScreen(onOpenAbout: () -> Unit, modifier: Modifier = Modifier) {
             }
         }
         item {
+            ListItem(modifier = Modifier.clickable(onClick = onDiagnostics),
+                headlineContent = { Text("帮助与诊断") }, supportingContent = { Text("使用说明、预览并复制诊断信息") })
             Text("关于", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 4.dp))
             ListItem(
                 modifier = Modifier
@@ -188,10 +199,10 @@ fun AboutScreen(onBack: () -> Unit) {
             verticalArrangement = Arrangement.spacedBy(18.dp)
         ) {
             item { Text("OpenScope", style = MaterialTheme.typography.displayMedium) }
-            item { Text("让好奇心走得更远。", style = MaterialTheme.typography.titleLarge) }
+            item { Text("四野 SiYe 的 Android 客户端", style = MaterialTheme.typography.titleLarge) }
             item {
                 Text(
-                    "Android 原生验证版 · ${BuildConfig.VERSION_NAME}\n\n哔哩哔哩关键词搜索已取到真实结果，但可能触发平台验证；知乎登录与搜索闭环待验证；小红书通过官方网页读取搜索卡片，真实账号闭环仍待验证。\n\n登录信息保留在 App 本地。没有云端代抓服务。",
+                    "Android 原生版 · ${BuildConfig.VERSION_NAME}\n\n收藏、稍后再看、历史与导出都保存在本机。抖音为实验性来源，支持能力以实际网页返回为准。\n\n主项目：https://github.com/KellenGO/SiYe\nAndroid：https://github.com/metaMMY07/MediaCrawler\n\n登录信息保留在 App 本地。没有云端代抓服务。",
                     style = MaterialTheme.typography.bodyLarge
                 )
             }
@@ -214,7 +225,7 @@ fun AboutScreen(onBack: () -> Unit) {
                 LazyColumn(Modifier.height(420.dp)) {
                     item {
                         Text(
-                            "MediaCrawler @ 8773e47\nhttps://github.com/KellenGO/MediaCrawler\n\n$license",
+                            "SiYe @ 31ccca4\nhttps://github.com/KellenGO/SiYe\n基于 MediaCrawler 聚合搜索方向，Android 独立维护。\n\n$license",
                             style = MaterialTheme.typography.bodySmall
                         )
                     }

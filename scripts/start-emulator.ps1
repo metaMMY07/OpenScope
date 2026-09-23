@@ -1,7 +1,8 @@
 [CmdletBinding()]
 param()
 $ErrorActionPreference = 'Stop'
-$sdk = 'C:\Users\30622\AppData\Local\Android\Sdk'
+$sdk = if (Test-Path 'D:\Codex-Migrated\Android\Sdk') { 'D:\Codex-Migrated\Android\Sdk' } else { 'C:\Users\30622\AppData\Local\Android\Sdk' }
+$env:ANDROID_HOME = $sdk
 $env:ANDROID_AVD_HOME = 'C:\Users\30622\.codex\mediasearch-avd'
 if (-not (Test-Path -LiteralPath "$env:ANDROID_AVD_HOME\MediaSearchApi35.ini")) {
     throw 'Create the dedicated MediaSearchApi35 AVD first; see docs/build-verified.md.'

@@ -14,6 +14,7 @@ object SessionEvidence {
             Platform.BILIBILI -> listOf("SESSDATA")
             Platform.ZHIHU -> listOf("d_c0", "z_c0")
             Platform.XHS -> listOf("web_session")
+            Platform.DOUYIN -> listOf("sessionid")
         }
         if (!names.all { it in values }) return null
         val identity = names.joinToString(";") { "$it=${values.getValue(it).distinct().sorted().joinToString(",")}" }

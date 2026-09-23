@@ -23,7 +23,7 @@ val LocalThemePreferences = staticCompositionLocalOf<ThemePreferences> {
 fun CollectionTheme(content: @Composable () -> Unit) {
     val context = LocalContext.current
     val preferences = remember { ThemePreferences(context) }
-    val dark = isSystemInDarkTheme()
+    val dark = when (preferences.appearance) { "light" -> false; "dark" -> true; else -> isSystemInDarkTheme() }
     val colors = when {
         preferences.useDynamicColors && Build.VERSION.SDK_INT >= 31 && dark -> dynamicDarkColorScheme(context)
         preferences.useDynamicColors && Build.VERSION.SDK_INT >= 31 -> dynamicLightColorScheme(context)

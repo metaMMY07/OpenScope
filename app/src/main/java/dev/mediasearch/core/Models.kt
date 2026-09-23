@@ -3,7 +3,8 @@ package dev.mediasearch.core
 enum class Platform(val label: String, val homeUrl: String, val cookieUrl: String) {
     BILIBILI("哔哩哔哩", "https://www.bilibili.com", "https://api.bilibili.com"),
     ZHIHU("知乎", "https://www.zhihu.com/signin", "https://www.zhihu.com"),
-    XHS("小红书", "https://www.xiaohongshu.com", "https://edith.xiaohongshu.com")
+    XHS("小红书", "https://www.xiaohongshu.com", "https://edith.xiaohongshu.com"),
+    DOUYIN("抖音", "https://www.douyin.com", "https://www.douyin.com")
 }
 
 data class SearchItem(
@@ -14,7 +15,10 @@ data class SearchItem(
     val summary: String,
     val url: String,
     val thumbnailUrl: String = "",
-    val metric: String = ""
+    val metric: String = "",
+    val publishedAt: Long? = null,
+    val engagement: Long? = null,
+    val views: Long? = null
 )
 
 data class SearchPage(val items: List<SearchItem>, val hasMore: Boolean, val page: Int)

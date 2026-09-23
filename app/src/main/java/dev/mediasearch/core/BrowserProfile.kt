@@ -4,7 +4,7 @@ import java.net.URI
 
 /** Desktop-site preference shared by visible pages and their native API requests. */
 object BrowserProfile {
-    fun desktop(platform: Platform) = platform == Platform.BILIBILI || platform == Platform.XHS
+    fun desktop(platform: Platform) = platform != Platform.ZHIHU
 
     fun desktopUserAgent(default: String): String = default
         .replaceFirst(Regex("\\([^)]*\\)"), "(X11; Linux x86_64)")
@@ -26,6 +26,7 @@ object BrowserProfile {
             Platform.BILIBILI -> "bilibili.com"
             Platform.ZHIHU -> "zhihu.com"
             Platform.XHS -> "xiaohongshu.com"
+            Platform.DOUYIN -> "douyin.com"
         }
         val host = uri.host?.lowercase() ?: return false
         uri.scheme == "https" && uri.userInfo == null && uri.port in listOf(-1, 443) &&

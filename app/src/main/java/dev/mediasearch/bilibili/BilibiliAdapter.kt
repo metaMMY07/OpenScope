@@ -230,7 +230,12 @@ class BilibiliAdapter(private val transport: HttpTransport) : SearchAdapter {
             summary = summary,
             url = url,
             thumbnailUrl = thumbnail,
-            metric = metric
+            metric = metric,
+            publishedAt = raw.optLong("pubdate", 0).takeIf { it > 0 },
+            engagement = listOf("like", "favorites", "review", "video_review").mapNotNull { key ->
+                raw.optLong(key, -1).takeIf { it >= 0 }
+            }.takeIf { it.isNotEmpty() }?.sum(),
+            views = dev.mediasearch.core.displayCount(raw.optString("play"))
         )
     }
 
