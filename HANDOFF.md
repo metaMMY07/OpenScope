@@ -1,4 +1,6 @@
-# 接手入口：OpenScope Android 0.4.4
+# 接手入口：OpenScope Android 0.4.5 本地开发版
+
+**2026-09-23 网页布局版：**0.4.5 使用 `versionCode=9`，设置可选移动网页或电脑网页；可见内容网页按所选布局打开，手机默认移动版、平板默认电脑版。登录与后台搜索维持兼容路径。验收见 [docs/release-0.4.5.md](docs/release-0.4.5.md)。
 
 **2026-09-23 发布版：**0.4.4 使用 `versionCode=8`、`versionName=0.4.4`，保留 0.4.3 的功能并修复极简首页 dock、深色文字和状态栏对比度。已发布到 GitHub Release `v0.4.4`，详见 [docs/release-0.4.4.md](docs/release-0.4.4.md)。
 

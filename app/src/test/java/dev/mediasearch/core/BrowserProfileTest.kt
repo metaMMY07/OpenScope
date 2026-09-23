@@ -29,6 +29,24 @@ class BrowserProfileTest {
         assertEquals(passport, BrowserProfile.pageUrl(Platform.BILIBILI, passport))
     }
 
+    @Test fun `visible mobile pages keep Android identity and Bili video context`() {
+        assertEquals(mobile, BrowserProfile.visibleUserAgent(mobile, desktop = false))
+        assertTrue("X11; Linux x86_64" in BrowserProfile.visibleUserAgent(mobile, desktop = true))
+        val video = "https://www.bilibili.com/video/BV123?p=2&keyword=%E7%8C%AB#reply"
+        assertEquals("https://m.bilibili.com/video/BV123?p=2&keyword=%E7%8C%AB#reply",
+            BrowserProfile.visiblePageUrl(Platform.BILIBILI, video, desktop = false))
+        assertEquals(video, BrowserProfile.visiblePageUrl(Platform.BILIBILI, video, desktop = true))
+        assertEquals("https://m.bilibili.com/", BrowserProfile.visiblePageUrl(Platform.BILIBILI, Platform.BILIBILI.homeUrl, desktop = false))
+        assertEquals("https://passport.bilibili.com/login",
+            BrowserProfile.visiblePageUrl(Platform.BILIBILI, "https://passport.bilibili.com/login", desktop = false))
+    }
+
+    @Test fun `mobile navigation still upgrades HTTPS and rejects foreign hosts`() {
+        assertEquals("https://m.bilibili.com/video/BV123?p=2",
+            BrowserProfile.secureVisibleNavigationUrl(Platform.BILIBILI, "http://www.bilibili.com/video/BV123?p=2", desktop = false))
+        assertNull(BrowserProfile.secureVisibleNavigationUrl(Platform.BILIBILI, "https://bilibili.com.evil.test/video/BV123", desktop = false))
+    }
+
     @Test fun `xhs explore is entrypoint but signed note URLs are unchanged`() {
         assertEquals("https://www.xiaohongshu.com/explore", BrowserProfile.pageUrl(Platform.XHS, "https://www.xiaohongshu.com"))
         val note = "https://www.xiaohongshu.com/explore/123?xsec_token=fixture%2Bvalue&xsec_source=pc_search"

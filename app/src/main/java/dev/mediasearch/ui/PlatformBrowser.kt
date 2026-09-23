@@ -28,10 +28,12 @@ import kotlinx.coroutines.*
 @Composable
 fun PlatformBrowser(platform: Platform, initialUrl: String, login: Boolean, model: SearchViewModel,
                     onClose: () -> Unit, onVerified: () -> Unit) {
+    val preferences = LocalThemePreferences.current
+    // Login keeps the platform-tested profile; the setting changes readable content pages only.
+    val desktop = if (login) BrowserProfile.desktop(platform) else preferences.desktopWebPages
     var webView by remember { mutableStateOf<WebView?>(null) }
     var progress by remember { mutableFloatStateOf(0f) }
-    val pageUrl = remember(platform, initialUrl) { BrowserProfile.pageUrl(platform, initialUrl) }
-    val desktop = BrowserProfile.desktop(platform)
+    val pageUrl = remember(platform, initialUrl, desktop) { BrowserProfile.visiblePageUrl(platform, initialUrl, desktop) }
     var host by remember { mutableStateOf(Uri.parse(pageUrl).host.orEmpty()) }
     var error by remember { mutableStateOf<String?>(null) }
     var loginMessage by remember { mutableStateOf(if (desktop) "请使用已有账号的手机号或密码登录；可双指缩放页面" else "请使用已有账号，在平台官方页面登录") }
@@ -94,7 +96,7 @@ fun PlatformBrowser(platform: Platform, initialUrl: String, login: Boolean, mode
                     loginMessage = "已登录"
                     if (login) { delay(500); currentOnVerified(); break }
                 } else {
-                    if (pageAuth == false) model.sessions.mark(platform, SessionStatus.MISSING)
+                    if (pageAuth == false && (login || desktop)) model.sessions.mark(platform, SessionStatus.MISSING)
                     loginMessage = if (platform == Platform.DOUYIN && captured) "会话已保存，可关闭页面后尝试搜索；登录状态尚待确认" else "请在官方页面完成登录"
                 }
             } catch (e: TimeoutCancellationException) {
@@ -109,7 +111,8 @@ fun PlatformBrowser(platform: Platform, initialUrl: String, login: Boolean, mode
         topBar = {
             TopAppBar(title = { Column {
                 Text(if (login) "登录${platform.label}" else platform.label, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                Text(if (desktop) "$host · 电脑版" else host, style = MaterialTheme.typography.labelSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text("$host · ${if (desktop) "电脑版" else "移动版"}", style = MaterialTheme.typography.labelSmall,
+                    maxLines = 1, overflow = TextOverflow.Ellipsis)
             } },
                 navigationIcon = { TextButton(onClick = { back() }) { Text("返回") } },
                 actions = {
@@ -137,9 +140,9 @@ fun PlatformBrowser(platform: Platform, initialUrl: String, login: Boolean, mode
                     webView = this
                     settings.javaScriptEnabled = true
                     settings.domStorageEnabled = true
-                    settings.userAgentString = BrowserProfile.userAgent(platform, WebSettings.getDefaultUserAgent(context))
+                    settings.userAgentString = BrowserProfile.visibleUserAgent(WebSettings.getDefaultUserAgent(context), desktop)
                     settings.useWideViewPort = true
-                    settings.loadWithOverviewMode = true
+                    settings.loadWithOverviewMode = desktop
                     settings.setSupportZoom(true)
                     settings.builtInZoomControls = true
                     settings.displayZoomControls = false
@@ -181,14 +184,14 @@ fun PlatformBrowser(platform: Platform, initialUrl: String, login: Boolean, mode
                             // Embedded HTTPS authentication frames use the browser's normal origin isolation.
                             // Only top-level navigation is restricted to this platform; there is no native bridge.
                             if (!request.isForMainFrame) return request.url.scheme != "https"
-                            val desktopUrl = BrowserProfile.secureNavigationUrl(platform, request.url.toString())
-                            if (desktopUrl == null) {
+                            val targetUrl = BrowserProfile.secureVisibleNavigationUrl(platform, request.url.toString(), desktop)
+                            if (targetUrl == null) {
                                 if (dev.mediasearch.BuildConfig.DEBUG) android.util.Log.d("PageNavigation", "blocked ${request.url.scheme}://${request.url.host}${request.url.path}")
                                 if (request.isForMainFrame) error = "该链接无法在此页面打开，请返回继续浏览"
                                 return true
                             }
-                            if (desktopUrl != request.url.toString()) {
-                                view.loadUrl(desktopUrl)
+                            if (targetUrl != request.url.toString()) {
+                                view.loadUrl(targetUrl)
                                 return true
                             }
                             return false

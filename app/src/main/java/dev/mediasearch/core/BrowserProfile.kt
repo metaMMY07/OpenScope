@@ -2,7 +2,7 @@ package dev.mediasearch.core
 
 import java.net.URI
 
-/** Desktop-site preference shared by visible pages and their native API requests. */
+/** Existing crawler/browser compatibility profile; visible content pages may choose another layout. */
 object BrowserProfile {
     fun desktop(platform: Platform) = platform != Platform.ZHIHU
 
@@ -13,6 +13,30 @@ object BrowserProfile {
 
     fun userAgent(platform: Platform, default: String): String =
         if (desktop(platform)) desktopUserAgent(default) else default
+
+    fun visibleUserAgent(default: String, desktop: Boolean): String =
+        if (desktop) desktopUserAgent(default) else default
+
+    /** Layout choice for visible content pages only; crawler requests retain their known profile. */
+    fun visiblePageUrl(platform: Platform, url: String, desktop: Boolean): String {
+        if (desktop) return pageUrl(platform, url)
+        if (!allowed(platform, url)) return url
+        val uri = URI(url)
+        val path = uri.rawPath.orEmpty().ifEmpty { "/" }
+        return when {
+            platform == Platform.BILIBILI && uri.host in setOf("www.bilibili.com", "bilibili.com") &&
+                (path == "/" || path.startsWith("/video/")) ->
+                "https://m.bilibili.com" + path +
+                    uri.rawQuery?.let { "?$it" }.orEmpty() + uri.rawFragment?.let { "#$it" }.orEmpty()
+            platform == Platform.XHS && path == "/" -> "https://www.xiaohongshu.com/explore"
+            else -> url
+        }
+    }
+
+    fun secureVisibleNavigationUrl(platform: Platform, url: String, desktop: Boolean): String? {
+        val secure = if (url.startsWith("http://", ignoreCase = true)) "https://" + url.substring(7) else url
+        return secure.takeIf { allowed(platform, it) }?.let { visiblePageUrl(platform, it, desktop) }
+    }
 
     /** Some official redirects downgrade to HTTP. Reissue as HTTPS without sending cleartext. */
     fun secureNavigationUrl(platform: Platform, url: String): String? {

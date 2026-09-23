@@ -96,6 +96,16 @@ class ThemePreferences(context: Context) {
     var minimalHome by mutableStateOf(preferences.getBoolean(KEY_MINIMAL_HOME, false))
         private set
 
+    var desktopWebPages by mutableStateOf(
+        preferences.getBoolean(KEY_DESKTOP_WEB_PAGES, context.resources.configuration.smallestScreenWidthDp >= 600)
+    )
+        private set
+
+    fun useDesktopWebPages(enabled: Boolean) {
+        desktopWebPages = enabled
+        preferences.edit().putBoolean(KEY_DESKTOP_WEB_PAGES, enabled).apply()
+    }
+
     fun useMinimalHome(enabled: Boolean) {
         minimalHome = enabled
         preferences.edit().putBoolean(KEY_MINIMAL_HOME, enabled).apply()
@@ -122,5 +132,6 @@ class ThemePreferences(context: Context) {
         const val KEY_DYNAMIC = "use_dynamic_colors"
         const val KEY_PALETTE = "palette"
         const val KEY_MINIMAL_HOME = "minimal_home"
+        const val KEY_DESKTOP_WEB_PAGES = "desktop_web_pages"
     }
 }
