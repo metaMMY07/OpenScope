@@ -15,15 +15,15 @@ Kotlin + Jetpack Compose + Material 3 聚合搜索 Android 客户端，面向 Bi
 | --- | --- | --- |
 | ![OpenScope 搜索页](docs/images/openscope-search.jpg) | ![OpenScope 设置页](docs/images/openscope-settings.jpg) | ![OpenScope 账号页](docs/images/openscope-accounts.jpg) |
 
-## 本地开发版：0.4.2
+## 最新版本：v0.4.2
 
-本地 ARM64 安装包：[OpenScope-0.4.2-arm64-v8a.apk](artifacts/OpenScope-0.4.2-arm64-v8a.apk)。0.4.2 修复抖音登录识别与官方搜索页视频卡片读取；登录态模拟器对“iPhone”返回 16 条相关结果，耗时 6185ms。该来源仍为默认关闭的实验能力，官方页对“Android”的一次搜索返回了明显不相关的内容，不承诺所有关键词稳定。详见 [0.4.2 验收](docs/release-0.4.2.md)。
+GitHub Release：[OpenScope Android v0.4.2](https://github.com/metaMMY07/MediaCrawler/releases/tag/v0.4.2)，侧载包可从 Release 附件下载。0.4.2 修复抖音登录识别与官方搜索页视频卡片读取；登录态模拟器对“iPhone”返回 16 条相关结果，耗时 6185ms。该来源仍为默认关闭的实验能力，官方页对“Android”的一次搜索返回了明显不相关的内容，不承诺所有关键词稳定。详见 [0.4.2 验收](docs/release-0.4.2.md)。
 
 ## 0.4.1 历史记录
 
 本地 ARM64 安装包：[OpenScope-0.4.1-arm64-v8a.apk](artifacts/OpenScope-0.4.1-arm64-v8a.apk)。0.4.1 将四个平台的占位字符换成官方图标，搜索与内容库卡片增加左侧封面、清楚的边框和可用的发布日期、播放、点赞、收藏等数据；缺失字段不编造。详见 [0.4.1 验收](docs/release-0.4.1.md)。0.4.0 的内容库、导出与抖音实验入口记录见 [功能对照](docs/release-0.4.0.md)。这两个版本均未公开发布。
 
-## 最新公开版本：v0.1.1
+## v0.1.1 历史发布记录
 
 GitHub Release：[OpenScope Android v0.1.1](https://github.com/metaMMY07/MediaCrawler/releases/tag/v0.1.1)。侧载测试包：[OpenScope-0.3.0-arm64-v8a.apk](https://github.com/metaMMY07/MediaCrawler/releases/download/v0.1.1/OpenScope-0.3.0-arm64-v8a.apk)，10,434,637 bytes（10.43 MB），versionCode 3。APK 内部 versionName 保留为 0.3.0；使用内部测试 debug 签名，可覆盖安装。
 
@@ -60,7 +60,7 @@ pwsh -File .\scripts\build-local.ps1 -Target Verify
 
 - [HANDOFF.md](HANDOFF.md)：接手顺序、当前交付与待办。
 - [ASTRA-HANDOFF.md](ASTRA-HANDOFF.md)：D 盘迁移、远端发布和继续开发入口。
-- [docs/release-0.4.2.md](docs/release-0.4.2.md)：当前本地开发版抖音登录态搜索验收。
+- [docs/release-0.4.2.md](docs/release-0.4.2.md)：当前版本抖音登录态搜索验收。
 - [docs/release-0.4.1.md](docs/release-0.4.1.md)：上一版视觉与数据验收。
 - [docs/release-0.4.0.md](docs/release-0.4.0.md)：SiYe 功能对照与上一版验收。
 - [docs/release-0.3.0.md](docs/release-0.3.0.md)：公开版 0.3.0 包体、签名、测试与截图证据。
