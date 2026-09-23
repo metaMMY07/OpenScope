@@ -1,6 +1,6 @@
 # OpenScope 项目迁移交接（给 Astra）
 
-**2026-09-23 当前入口：**项目目录 `D:\OpenScope`；GitHub 仓库现名为 [metaMMY07/OpenScope](https://github.com/metaMMY07/OpenScope)，0.4.2 已发布，0.4.3 是尚未公开的本地开发版。源码位于 `codex/siye-android-parity`，最新开发验收见 [docs/release-0.4.3.md](docs/release-0.4.3.md)，SiYe 功能对照见 [docs/release-0.4.0.md](docs/release-0.4.0.md)。下文保留迁移和旧版发布时的历史记录。
+**2026-09-23 当前入口：**项目目录 `D:\OpenScope`；GitHub 仓库现名为 [metaMMY07/OpenScope](https://github.com/metaMMY07/OpenScope)，0.4.2 已发布，0.4.4 是尚未公开的本地开发版（版本代码 8，可覆盖 0.4.3）。源码位于 `codex/siye-android-parity`，最新开发验收见 [docs/release-0.4.4.md](docs/release-0.4.4.md)，SiYe 功能对照见 [docs/release-0.4.0.md](docs/release-0.4.0.md)。下文保留迁移和旧版发布时的历史记录。
 
 更新时间：2026-09-15（Asia/Taipei）
 
