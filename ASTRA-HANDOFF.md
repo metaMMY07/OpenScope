@@ -1,6 +1,6 @@
 # OpenScope 项目迁移交接（给 Astra）
 
-**2026-09-23 当前入口：**项目仍在 `D:\OpenScope`，工作分支为 `codex/siye-android-parity`；最新本地开发版为 0.4.2，验收见 [docs/release-0.4.2.md](docs/release-0.4.2.md)，SiYe 功能对照见 [docs/release-0.4.0.md](docs/release-0.4.0.md)。下文为 2026-09-15 的迁移/公开版历史记录，不能据此判断当前分支、源码版本或抖音功能状态。当前修改尚未推送或公开发布。
+**2026-09-23 当前入口：**项目目录 `D:\OpenScope`；GitHub 仓库现名为 [metaMMY07/OpenScope](https://github.com/metaMMY07/OpenScope)，0.4.2 已发布。源码位于 `codex/siye-android-parity` 与 `master`，最新验收见 [docs/release-0.4.2.md](docs/release-0.4.2.md)，SiYe 功能对照见 [docs/release-0.4.0.md](docs/release-0.4.0.md)。下文保留迁移和旧版发布时的历史记录。
 
 更新时间：2026-09-15（Asia/Taipei）
 
@@ -8,7 +8,7 @@
 
 项目已完整迁移到：`D:\OpenScope`
 
-Git 远端：`https://github.com/metaMMY07/MediaCrawler.git`
+Git 远端：`https://github.com/metaMMY07/OpenScope.git`
 
 当前分支：`master`，远端已同步。公开 Release：`v0.1.1`。
 
@@ -23,8 +23,8 @@ Git 远端：`https://github.com/metaMMY07/MediaCrawler.git`
 
 ## 已发布内容
 
-- 仓库：[metaMMY07/MediaCrawler](https://github.com/metaMMY07/MediaCrawler)
-- Release：[OpenScope Android v0.1.1](https://github.com/metaMMY07/MediaCrawler/releases/tag/v0.1.1)
+- 仓库：[metaMMY07/OpenScope](https://github.com/metaMMY07/OpenScope)
+- Release：[OpenScope Android v0.1.1](https://github.com/metaMMY07/OpenScope/releases/tag/v0.1.1)
 - 贡献者：`metaMMY07`、`KellenGO`（README 与发布提交的 Co-authored-by 均已记录）。
 - Release 资产为 ARM64 APK；源码内 versionName 仍是 `0.3.0`，GitHub 发布标签按需求为 `v0.1.1`。
 
