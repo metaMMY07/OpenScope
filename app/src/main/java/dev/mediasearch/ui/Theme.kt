@@ -1,5 +1,6 @@
 package dev.mediasearch.ui
 
+import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ColorScheme
@@ -10,10 +11,12 @@ import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.core.view.WindowInsetsControllerCompat
 
 val LocalThemePreferences = staticCompositionLocalOf<ThemePreferences> {
     error("ThemePreferences is only available below CollectionTheme")
@@ -29,6 +32,14 @@ fun CollectionTheme(content: @Composable () -> Unit) {
         preferences.useDynamicColors && Build.VERSION.SDK_INT >= 31 -> dynamicLightColorScheme(context)
         dark -> preferences.palette.darkScheme()
         else -> preferences.palette.lightScheme()
+    }
+    // App appearance may override the device setting; system-bar icons must follow it too.
+    (context as? Activity)?.let { activity ->
+        SideEffect {
+            val controller = WindowInsetsControllerCompat(activity.window, activity.window.decorView)
+            controller.isAppearanceLightStatusBars = !dark
+            controller.isAppearanceLightNavigationBars = !dark
+        }
     }
     CompositionLocalProvider(LocalThemePreferences provides preferences) {
         MaterialTheme(colorScheme = colors, typography = androidx.compose.material3.Typography(), content = content)

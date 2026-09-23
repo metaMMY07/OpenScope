@@ -79,7 +79,7 @@ fun SettingsScreen(onOpenAbout: () -> Unit, modifier: Modifier = Modifier, onDia
                 ) {
                     Column(Modifier.weight(1f)) {
                         Text("极简首页", style = MaterialTheme.typography.titleMedium)
-                        Text("首页只显示 OpenScope、搜索栏和四个平台；点击标题可回到设置。搜索结果照常显示。",
+                        Text("首页聚焦 OpenScope、搜索栏和四个平台，保留底部导航；点击标题可回到设置。搜索结果照常显示。",
                             color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
                     }
                     Switch(checked = preferences.minimalHome, onCheckedChange = preferences::useMinimalHome)

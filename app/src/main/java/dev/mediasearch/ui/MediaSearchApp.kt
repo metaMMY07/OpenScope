@@ -110,8 +110,13 @@ fun MediaSearchApp(model: SearchViewModel) {
         } else if (tab == 3 && showHelp) {
             HelpScreen(model, onBack = { showHelp = false })
         } else if (tab == 0 && (state.query.isBlank() || showHome) && LocalThemePreferences.current.minimalHome) {
-            MinimalSearchHome(state.input, state.enabled, model::input, model::togglePlatform,
-                onSearch = ::startSearch, onSettings = { tab = 3 })
+            Scaffold(
+                containerColor = MaterialTheme.colorScheme.background,
+                bottomBar = { AppBottomBar(tab) { tab = it } }
+            ) { padding ->
+                MinimalSearchHome(state.input, state.enabled, model::input, model::togglePlatform,
+                    onSearch = ::startSearch, onSettings = { tab = 3 }, modifier = Modifier.padding(padding))
+            }
         } else {
             BackHandler(enabled = tab == 0 && !showHome && state.query.isNotBlank()) { showHome = true }
             Scaffold(
@@ -130,19 +135,7 @@ fun MediaSearchApp(model: SearchViewModel) {
                         colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = MaterialTheme.colorScheme.background)
                     )
                 },
-                bottomBar = {
-                    NavigationBar(containerColor = MaterialTheme.colorScheme.surfaceContainer) {
-                        listOf(
-                            "搜索" to AppIcons.Explore,
-                            "内容库" to AppIcons.Bookmark,
-                            "账号" to AppIcons.Person,
-                            "设置" to AppIcons.Settings
-                        ).forEachIndexed { index, (label, icon) ->
-                            NavigationBarItem(selected = tab == index, onClick = { tab = index },
-                                icon = { Icon(icon, contentDescription = label) }, label = { Text(label) })
-                        }
-                    }
-                }
+                bottomBar = { AppBottomBar(tab) { tab = it } }
             ) { padding ->
                 when (tab) {
                     0 -> LazyColumn(
@@ -349,7 +342,21 @@ fun MediaSearchApp(model: SearchViewModel) {
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun AppBottomBar(selectedTab: Int, onSelect: (Int) -> Unit) {
+    NavigationBar(containerColor = MaterialTheme.colorScheme.surfaceContainer) {
+        listOf(
+            "搜索" to AppIcons.Explore,
+            "内容库" to AppIcons.Bookmark,
+            "账号" to AppIcons.Person,
+            "设置" to AppIcons.Settings
+        ).forEachIndexed { index, (label, icon) ->
+            NavigationBarItem(selected = selectedTab == index, onClick = { onSelect(index) },
+                icon = { Icon(icon, contentDescription = label) }, label = { Text(label) })
+        }
+    }
+}
+
 @Composable
 private fun MinimalSearchHome(
     input: String,
@@ -357,10 +364,11 @@ private fun MinimalSearchHome(
     onInput: (String) -> Unit,
     onToggle: (Platform) -> Unit,
     onSearch: () -> Unit,
-    onSettings: () -> Unit
+    onSettings: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val keyboard = LocalSoftwareKeyboardController.current
-    Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
+    Box(modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         Column(
             modifier = Modifier.align(Alignment.Center).fillMaxWidth(0.9f).widthIn(max = 720.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -374,7 +382,8 @@ private fun MinimalSearchHome(
             ) {
                 Icon(AppIcons.Explore, contentDescription = null, tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(36.dp))
-                Text("OpenScope", style = MaterialTheme.typography.displaySmall, fontWeight = FontWeight.Bold)
+                Text("OpenScope", style = MaterialTheme.typography.displaySmall, fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground)
             }
             OutlinedTextField(
                 value = input, onValueChange = onInput, modifier = Modifier.fillMaxWidth(), singleLine = true,
@@ -406,7 +415,7 @@ private fun MinimalSearchHome(
                             Box(Modifier.size(48.dp), contentAlignment = Alignment.Center) { PlatformLogo(platform, 28.dp) }
                         }
                         Text(platform.label, style = MaterialTheme.typography.labelMedium, maxLines = 1,
-                            overflow = TextOverflow.Ellipsis)
+                            overflow = TextOverflow.Ellipsis, color = MaterialTheme.colorScheme.onBackground)
                     }
                 }
             }
