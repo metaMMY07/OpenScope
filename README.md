@@ -1,6 +1,6 @@
 # OpenScope
 
-> 0.4.4 已发布。下一版 0.4.5 将官方电脑网页按手机或平板屏幕适配，保留完整网页功能。见 [0.4.5 验收](docs/release-0.4.5.md)。
+> 0.4.4 已发布。0.4.6 本地测试版进一步修复 B 站手机视频页的滚动遮挡，并加入横屏全屏播放。见 [0.4.6 验收](docs/release-0.4.6.md)。
 
 **面向 Android 的多平台内容搜索客户端。**输入一个关键词，可聚合浏览 Bilibili、知乎和小红书的公开内容；抖音作为可选实验来源。
 
@@ -20,12 +20,12 @@
 - 结果卡片显示可取得的封面、时间、播放量、点赞、收藏和评论数据；平台未提供的字段会留空。
 - 本地内容库支持收藏、稍后再看、历史记录、筛选、排序和数据备份。
 - Material You 界面，支持调整主题色。
-- 官方内容网页可切换手机页面与平板页面；两种模式都使用电脑网页功能，手机模式按屏幕宽度和较大字号适配。
+- 官方内容网页可切换手机页面与平板页面；两种模式都使用电脑网页功能。手机模式适配 B 站视频页宽度和滚动，全屏按钮可横屏播放。
 - 使用 App 内官方网页完成平台登录，会话留在本机；不需要 PC、Termux 或 root，也没有云端代抓服务。
 
 ## 下载和安装
 
-从 [GitHub Releases](https://github.com/metaMMY07/OpenScope/releases/latest) 下载 `OpenScope-0.4.2-arm64-v8a.apk`，用于大多数 Android 手机。安装包约 10.75 MB，最低支持 Android 10（API 29）。Android 会要求允许从当前来源安装 APK。
+从 [GitHub Releases](https://github.com/metaMMY07/OpenScope/releases/latest) 下载已发布版本，或使用本地测试包 `artifacts/OpenScope-0.4.6-arm64-v8a.apk`，用于大多数 Android 手机。安装包约 11 MB，最低支持 Android 10（API 29）。Android 会要求允许从当前来源安装 APK。
 
 当前 APK 使用内部测试签名，适合侧载测试；若未来签名密钥更换，可能需要先卸载旧版本才能安装新版。x86_64 包仅用于模拟器。
 

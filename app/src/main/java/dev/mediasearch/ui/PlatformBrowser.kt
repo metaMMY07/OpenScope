@@ -4,11 +4,14 @@ import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.net.Uri
 import android.net.http.SslError
+import android.content.pm.ActivityInfo
 import android.webkit.*
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -21,6 +24,8 @@ import androidx.webkit.UserAgentMetadata
 import androidx.webkit.WebSettingsCompat
 import androidx.webkit.WebViewFeature
 import androidx.webkit.WebViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import kotlinx.coroutines.*
 
 @SuppressLint("SetJavaScriptEnabled")
@@ -39,6 +44,10 @@ fun PlatformBrowser(platform: Platform, initialUrl: String, login: Boolean, mode
     var loginMessage by remember { mutableStateOf(if (BrowserProfile.desktop(platform)) "请使用已有账号的手机号或密码登录；可双指缩放页面" else "请使用已有账号，在平台官方页面登录") }
     var pageFinished by remember { mutableIntStateOf(0) }
     var loginRequested by remember { mutableStateOf(login && BrowserProfile.desktop(platform)) }
+    var isVideoPage by remember { mutableStateOf(false) }
+    var browserFullscreen by remember { mutableStateOf(false) }
+    var browserMenuExpanded by remember { mutableStateOf(false) }
+    val activity = LocalActivity.current
     val scope = rememberCoroutineScope()
     val currentOnVerified by rememberUpdatedState(onVerified)
 
@@ -49,7 +58,31 @@ fun PlatformBrowser(platform: Platform, initialUrl: String, login: Boolean, mode
         onClose()
     }
     fun back() { val view = webView; if (view?.canGoBack() == true) view.goBack() else finish() }
-    BackHandler { back() }
+    BackHandler { if (browserFullscreen) browserFullscreen = false else back() }
+
+    LaunchedEffect(browserFullscreen, webView) {
+        if (!login && !wideLayout && platform == Platform.BILIBILI) {
+            webView?.evaluateJavascript(
+                "document.documentElement.classList.toggle('openscope-bili-fullscreen', $browserFullscreen)", null
+            )
+        }
+    }
+    DisposableEffect(browserFullscreen, activity) {
+        val hideBars = browserFullscreen
+        val controller = activity?.let { WindowInsetsControllerCompat(it.window, it.window.decorView) }
+        val previousOrientation = activity?.requestedOrientation
+        if (hideBars) {
+            activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+            controller?.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            controller?.hide(WindowInsetsCompat.Type.systemBars())
+        } else controller?.show(WindowInsetsCompat.Type.systemBars())
+        onDispose {
+            if (hideBars) {
+                if (previousOrientation != null) activity?.requestedOrientation = previousOrientation
+                controller?.show(WindowInsetsCompat.Type.systemBars())
+            }
+        }
+    }
 
     LaunchedEffect(pageFinished, loginRequested) {
         if (!loginRequested || pageFinished == 0) return@LaunchedEffect
@@ -108,7 +141,7 @@ fun PlatformBrowser(platform: Platform, initialUrl: String, login: Boolean, mode
     }
 
     Scaffold(
-        topBar = {
+        topBar = { if (!browserFullscreen) {
             TopAppBar(title = { Column {
                 Text(if (login) "登录${platform.label}" else platform.label, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Text("$host · ${if (login) "官方登录" else if (wideLayout) "平板适配" else "手机适配"}", style = MaterialTheme.typography.labelSmall,
@@ -116,13 +149,26 @@ fun PlatformBrowser(platform: Platform, initialUrl: String, login: Boolean, mode
             } },
                 navigationIcon = { TextButton(onClick = { back() }) { Text("返回") } },
                 actions = {
-                    TextButton(onClick = { finish() }) { Text("关闭") }
-                    if (BrowserProfile.desktop(platform)) TextButton(onClick = { loginRequested = true }) { Text("登录") }
-                    TextButton(onClick = { error = null; webView?.reload() }) { Text("刷新") }
+                    if (!login && !wideLayout && platform == Platform.BILIBILI && isVideoPage) {
+                        TextButton(onClick = { browserMenuExpanded = false; browserFullscreen = true }) { Text("全屏") }
+                        Box {
+                            IconButton(onClick = { browserMenuExpanded = true }) { Text("⋮") }
+                            DropdownMenu(expanded = browserMenuExpanded, onDismissRequest = { browserMenuExpanded = false }) {
+                                DropdownMenuItem(text = { Text("登录") }, onClick = { browserMenuExpanded = false; loginRequested = true })
+                                DropdownMenuItem(text = { Text("刷新") }, onClick = { browserMenuExpanded = false; error = null; webView?.reload() })
+                                DropdownMenuItem(text = { Text("关闭") }, onClick = { browserMenuExpanded = false; finish() })
+                            }
+                        }
+                    } else {
+                        TextButton(onClick = { finish() }) { Text("关闭") }
+                        if (BrowserProfile.desktop(platform)) TextButton(onClick = { loginRequested = true }) { Text("登录") }
+                        TextButton(onClick = { error = null; webView?.reload() }) { Text("刷新") }
+                    }
                 })
-        }
+        } }
     ) { padding ->
-        Column(Modifier.fillMaxSize().padding(padding)) {
+        Box(Modifier.fillMaxSize().padding(padding)) {
+        Column(Modifier.fillMaxSize()) {
             if (progress < 1f) LinearProgressIndicator(progress = { progress }, modifier = Modifier.fillMaxWidth())
             if (login) Surface(color = MaterialTheme.colorScheme.secondaryContainer) {
                 Text(loginMessage, modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp), style = MaterialTheme.typography.bodySmall)
@@ -151,6 +197,9 @@ fun PlatformBrowser(platform: Platform, initialUrl: String, login: Boolean, mode
                     settings.textZoom = if (wideLayout) 100 else 115
                     val viewportAsset = if (wideLayout) "browser/desktop-viewport.js" else "browser/phone-viewport.js"
                     val viewportScript = context.assets.open(viewportAsset).bufferedReader().use { it.readText() }
+                    val phoneLayoutScript = if (!login && !wideLayout && platform == Platform.BILIBILI)
+                        context.assets.open("browser/bili-phone-layout.js").bufferedReader().use { it.readText() }
+                    else null
                     val startScriptSupported = WebViewFeature.isFeatureSupported(WebViewFeature.DOCUMENT_START_SCRIPT)
                     if (viewportScript != null && startScriptSupported) {
                         val root = when (platform) {
@@ -160,6 +209,10 @@ fun PlatformBrowser(platform: Platform, initialUrl: String, login: Boolean, mode
                             Platform.DOUYIN -> "douyin.com"
                         }
                         WebViewCompat.addDocumentStartJavaScript(this, viewportScript, setOf("https://$root", "https://*.$root"))
+                        if (phoneLayoutScript != null) {
+                            WebViewCompat.addDocumentStartJavaScript(this, phoneLayoutScript,
+                                setOf("https://bilibili.com", "https://*.bilibili.com"))
+                        }
                     }
                     if ((!login || BrowserProfile.desktop(platform)) && WebViewFeature.isFeatureSupported(WebViewFeature.USER_AGENT_METADATA)) {
                         // Keep Chromium's installed version while requesting the desktop presentation.
@@ -206,11 +259,14 @@ fun PlatformBrowser(platform: Platform, initialUrl: String, login: Boolean, mode
                         }
                         override fun onPageStarted(view: WebView, url: String?, favicon: Bitmap?) {
                             host = url?.let { Uri.parse(it).host }.orEmpty()
+                            isVideoPage = url?.contains("/video/") == true
+                            browserFullscreen = false
                             error = null
                         }
                         override fun onPageFinished(view: WebView, url: String?) {
                             if (viewportScript != null && !startScriptSupported && BrowserProfile.allowed(platform, url.orEmpty())) {
                                 view.evaluateJavascript(viewportScript, null)
+                                if (phoneLayoutScript != null) view.evaluateJavascript(phoneLayoutScript, null)
                             }
                             pageFinished++
                         }
@@ -235,6 +291,11 @@ fun PlatformBrowser(platform: Platform, initialUrl: String, login: Boolean, mode
                     else error = "不支持的来源链接"
                 }
             }, onRelease = { view -> webView = null; view.stopLoading(); view.destroy() })
+        }
+        if (browserFullscreen) FilledTonalButton(
+            onClick = { browserFullscreen = false },
+            modifier = Modifier.align(Alignment.TopEnd).padding(12.dp)
+        ) { Text("退出全屏") }
         }
     }
 }
