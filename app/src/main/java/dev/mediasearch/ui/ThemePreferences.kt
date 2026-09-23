@@ -78,8 +78,8 @@ enum class ThemePalette(
 }
 
 /**
- * SharedPreferences is intentionally limited to two scalar values. `apply()` keeps
- * changing a swatch off the UI thread while Compose state makes the change immediate.
+ * SharedPreferences stores only local appearance and home-layout choices. `apply()`
+ * keeps writes off the UI thread while Compose state makes each change immediate.
  */
 class ThemePreferences(context: Context) {
     private val preferences = context.applicationContext.getSharedPreferences(FILE_NAME, Context.MODE_PRIVATE)
@@ -92,6 +92,14 @@ class ThemePreferences(context: Context) {
 
     var appearance by mutableStateOf(preferences.getString("appearance", "system") ?: "system")
         private set
+
+    var minimalHome by mutableStateOf(preferences.getBoolean(KEY_MINIMAL_HOME, false))
+        private set
+
+    fun useMinimalHome(enabled: Boolean) {
+        minimalHome = enabled
+        preferences.edit().putBoolean(KEY_MINIMAL_HOME, enabled).apply()
+    }
     fun chooseAppearance(value: String) {
         if (value !in setOf("system", "light", "dark")) return
         appearance = value
@@ -113,5 +121,6 @@ class ThemePreferences(context: Context) {
         const val FILE_NAME = "collection_appearance"
         const val KEY_DYNAMIC = "use_dynamic_colors"
         const val KEY_PALETTE = "palette"
+        const val KEY_MINIMAL_HOME = "minimal_home"
     }
 }

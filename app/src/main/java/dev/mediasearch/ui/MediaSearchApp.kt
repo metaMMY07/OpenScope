@@ -2,6 +2,7 @@ package dev.mediasearch.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -24,6 +25,8 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.mediasearch.*
 import dev.mediasearch.core.*
@@ -56,6 +59,7 @@ fun MediaSearchApp(model: SearchViewModel) {
     var merged by rememberSaveable { mutableStateOf(false) }
     var exportOpen by remember { mutableStateOf(false) }
     var controlsOpen by rememberSaveable { mutableStateOf(false) }
+    var sourcesExpanded by rememberSaveable { mutableStateOf(false) }
     val selectedItems = remember(state.searchId) { mutableStateMapOf<String, Boolean>() }
     val keyboard = LocalSoftwareKeyboardController.current
     val scope = rememberCoroutineScope()
@@ -105,6 +109,9 @@ fun MediaSearchApp(model: SearchViewModel) {
             AboutScreen(onBack = { showAbout = false })
         } else if (tab == 3 && showHelp) {
             HelpScreen(model, onBack = { showHelp = false })
+        } else if (tab == 0 && (state.query.isBlank() || showHome) && LocalThemePreferences.current.minimalHome) {
+            MinimalSearchHome(state.input, state.enabled, model::input, model::togglePlatform,
+                onSearch = ::startSearch, onSettings = { tab = 3 })
         } else {
             BackHandler(enabled = tab == 0 && !showHome && state.query.isNotBlank()) { showHome = true }
             Scaffold(
@@ -120,7 +127,6 @@ fun MediaSearchApp(model: SearchViewModel) {
                                 modifier = Modifier.padding(start = 24.dp).size(28.dp)
                             )
                         },
-                        actions = { TextButton(onClick = { tab = 2 }) { Text("账号") } },
                         colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = MaterialTheme.colorScheme.background)
                     )
                 },
@@ -171,20 +177,35 @@ fun MediaSearchApp(model: SearchViewModel) {
                         }
                         if (state.query.isBlank() || showHome) {
                             if (state.query.isNotBlank()) item { OutlinedButton(onClick = { showHome = false }) { Text("查看上次搜索：${state.query}") } }
-                            item { TrendingSection(model) { term -> model.input(term); model.search(); if (state.enabled.isNotEmpty()) showHome = false } }
                             item {
-                                Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow), shape = RoundedCornerShape(24.dp)) {
-                                    Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                                        Text("你的内容来源", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-                                        Platform.entries.forEach { platform ->
-                                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                                PlatformMark(platform)
-                                                Column(Modifier.weight(1f).padding(horizontal = 12.dp)) {
-                                                    Text(platform.label, style = MaterialTheme.typography.bodyLarge)
-                                                    Text(sessions[platform]?.label.orEmpty(),
-                                                        style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                TrendingSection(model,
+                                    onSearch = { term -> model.input(term); model.search(); if (state.enabled.isNotEmpty()) showHome = false },
+                                    onOpenXhs = { browser = BrowserDestination(Platform.XHS, Platform.XHS.homeUrl, false) })
+                            }
+                            item {
+                                val allLoggedIn = Platform.entries.all { sessions[it] == SessionStatus.VERIFIED }
+                                if (allLoggedIn && !sourcesExpanded) {
+                                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                                        TextButton(onClick = { sourcesExpanded = true }) { Text("内容来源 · 已连接 4/4") }
+                                    }
+                                } else {
+                                    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow), shape = RoundedCornerShape(24.dp)) {
+                                        Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                                            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                                                Text("你的内容来源", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold,
+                                                    modifier = Modifier.weight(1f))
+                                                if (allLoggedIn) TextButton(onClick = { sourcesExpanded = false }) { Text("收起") }
+                                            }
+                                            Platform.entries.forEach { platform ->
+                                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                                    PlatformMark(platform)
+                                                    Column(Modifier.weight(1f).padding(horizontal = 12.dp)) {
+                                                        Text(platform.label, style = MaterialTheme.typography.bodyLarge)
+                                                        Text(sessions[platform]?.label.orEmpty(),
+                                                            style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                                    }
+                                                    TextButton(onClick = { login(platform) }) { Text(accountActionLabel(sessions[platform])) }
                                                 }
-                                                TextButton(onClick = { login(platform) }) { Text(accountActionLabel(sessions[platform])) }
                                             }
                                         }
                                     }
@@ -322,6 +343,71 @@ fun MediaSearchApp(model: SearchViewModel) {
                         }
                     }
                     else -> SettingsScreen(onOpenAbout = { showAbout = true }, modifier = Modifier.padding(padding), onDiagnostics = { showHelp = true })
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun MinimalSearchHome(
+    input: String,
+    enabled: Set<Platform>,
+    onInput: (String) -> Unit,
+    onToggle: (Platform) -> Unit,
+    onSearch: () -> Unit,
+    onSettings: () -> Unit
+) {
+    val keyboard = LocalSoftwareKeyboardController.current
+    Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
+        Column(
+            modifier = Modifier.align(Alignment.Center).fillMaxWidth(0.9f).widthIn(max = 720.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(24.dp)
+        ) {
+            Row(
+                modifier = Modifier.clip(RoundedCornerShape(16.dp)).clickable(onClick = onSettings)
+                    .semantics { contentDescription = "OpenScope，打开设置" }.padding(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Icon(AppIcons.Explore, contentDescription = null, tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(36.dp))
+                Text("OpenScope", style = MaterialTheme.typography.displaySmall, fontWeight = FontWeight.Bold)
+            }
+            OutlinedTextField(
+                value = input, onValueChange = onInput, modifier = Modifier.fillMaxWidth(), singleLine = true,
+                placeholder = { Text("搜索你感兴趣的事") }, shape = RoundedCornerShape(28.dp),
+                leadingIcon = { Icon(AppIcons.Search, contentDescription = "搜索") },
+                trailingIcon = {
+                    FilledTonalButton(onClick = { keyboard?.hide(); onSearch() }, enabled = input.isNotBlank(),
+                        contentPadding = PaddingValues(horizontal = 16.dp), modifier = Modifier.padding(end = 8.dp)) { Text("搜索") }
+                },
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                keyboardActions = KeyboardActions(onSearch = { keyboard?.hide(); onSearch() })
+            )
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+                Platform.entries.forEach { platform ->
+                    val selected = platform in enabled
+                    Column(
+                        modifier = Modifier.weight(1f).clip(RoundedCornerShape(16.dp))
+                            .clickable { onToggle(platform) }
+                            .semantics { contentDescription = "${platform.label}${if (selected) "，已选择" else "，未选择"}" }
+                            .padding(vertical = 6.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Surface(
+                            shape = RoundedCornerShape(14.dp),
+                            color = if (selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainerLow,
+                            border = BorderStroke(1.dp, if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant)
+                        ) {
+                            Box(Modifier.size(48.dp), contentAlignment = Alignment.Center) { PlatformLogo(platform, 28.dp) }
+                        }
+                        Text(platform.label, style = MaterialTheme.typography.labelMedium, maxLines = 1,
+                            overflow = TextOverflow.Ellipsis)
+                    }
                 }
             }
         }

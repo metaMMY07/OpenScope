@@ -33,7 +33,7 @@ internal fun highlight(text: String, keywords: String, color: Color): AnnotatedS
 }
 
 @Composable
-fun TrendingSection(model: SearchViewModel, onSearch: (String) -> Unit) {
+fun TrendingSection(model: SearchViewModel, onSearch: (String) -> Unit, onOpenXhs: () -> Unit) {
     val trends by model.trends.collectAsStateWithLifecycle()
     var platform by remember { mutableStateOf(Platform.BILIBILI) }
     var expanded by remember { mutableStateOf(false) }
@@ -49,7 +49,10 @@ fun TrendingSection(model: SearchViewModel, onSearch: (String) -> Unit) {
         }
         val result = trends[platform]
         if (result == null) LinearProgressIndicator(Modifier.fillMaxWidth())
-        else if (result.words.isEmpty()) Text(result.message ?: "暂无热搜", style = MaterialTheme.typography.bodySmall)
+        else if (result.words.isEmpty()) {
+            Text(result.message ?: "暂无热搜", style = MaterialTheme.typography.bodySmall)
+            if (platform == Platform.XHS) TextButton(onClick = onOpenXhs) { Text("打开小红书官方页面") }
+        }
         else {
             result.words.take(if (expanded) 20 else 3).forEachIndexed { index, word -> TextButton(onClick = { onSearch(word) }) { Text("${index + 1}  $word") } }
             if (result.words.size > 3) TextButton(onClick = { expanded = !expanded }) { Text(if (expanded) "收起热搜" else "更多热搜") }

@@ -45,6 +45,7 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
     private val zhihu by lazy { ZhihuAdapter(transport, { sessions.cookies(Platform.ZHIHU.cookieUrl) }, js::evaluate) }
     private val xhs = dev.mediasearch.xhs.XhsPageClient(application, sessions)
     private val xhsAccount = dev.mediasearch.xhs.XhsPageClient(application, sessions)
+    private val xhsTrending = dev.mediasearch.xhs.XhsPageClient(application, sessions)
     private val douyin = dev.mediasearch.douyin.DouyinPageClient(application)
     private val publicTransportDelegate = lazy { CronetTransport(application, sessions, useCookies = false) }
     private val trending by lazy { dev.mediasearch.trending.TrendingClient(publicTransportDelegate.value) }
@@ -84,7 +85,11 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
     fun fetchTrending(platform: Platform, refresh: Boolean = false) {
         if (trendJobs[platform]?.isActive == true || (!refresh && platform in _trends.value)) return
         trendJobs[platform] = viewModelScope.launch {
-            val result = trending.load(platform, refresh)
+            val result = if (platform == Platform.XHS) {
+                val words = xhsTrending.trendingWords()
+                dev.mediasearch.trending.TrendingResult(words,
+                    if (words.isEmpty()) "小红书热搜暂时取不到，可在官方网页查看" else null)
+            } else trending.load(platform, refresh)
             _trends.update { it + (platform to result) }
         }
     }
@@ -280,6 +285,7 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
         js.close()
         xhs.close()
         xhsAccount.close()
+        xhsTrending.close()
         douyin.close()
         trendJobs.values.forEach { it.cancel() }
         library.close()

@@ -45,6 +45,42 @@ class XhsPageClient(private val context: Context, private val sessions: SessionS
         }
     }
 
+    /** Reads search suggestions produced by the official Explore page; no unsigned API request. */
+    suspend fun trendingWords(): List<String> = lock.withLock {
+        withContext(Dispatchers.Main) {
+            try {
+                withTimeoutOrNull(15_000) {
+                    close(); loaded = false; failure = null
+                    val script = context.assets.open("browser/xhs-trending.js").bufferedReader().use { it.readText() }
+                    view = create()
+                    if (WebViewFeature.isFeatureSupported(WebViewFeature.DOCUMENT_START_SCRIPT)) {
+                        val capture = context.assets.open("browser/xhs-trending-capture.js").bufferedReader().use { it.readText() }
+                        WebViewCompat.addDocumentStartJavaScript(view!!, capture, setOf("https://www.xiaohongshu.com"))
+                    }
+                    view!!.loadUrl("https://www.xiaohongshu.com/explore")
+                    while (true) {
+                        if (failure != null) break
+                        val web = view ?: break
+                        if (loaded && web.url?.startsWith("https://www.xiaohongshu.com/explore") == true) {
+                            val data = decode(evaluatePage(web, script))
+                            if (data.optBoolean("challenge")) break
+                            val words = data.optJSONArray("words")
+                            if (words != null && words.length() > 0) {
+                                return@withTimeoutOrNull (0 until minOf(words.length(), 20))
+                                    .mapNotNull { words.optString(it).trim().takeIf(String::isNotBlank) }
+                                    .distinct()
+                            }
+                        }
+                        delay(500)
+                    }
+                    emptyList<String>()
+                } ?: emptyList()
+            } catch (cancelled: CancellationException) { throw cancelled }
+            catch (_: Exception) { emptyList() }
+            finally { close() }
+        }
+    }
+
     @SuppressLint("SetJavaScriptEnabled")
     private fun create(): WebView = WebView(context).apply {
         settings.javaScriptEnabled = true

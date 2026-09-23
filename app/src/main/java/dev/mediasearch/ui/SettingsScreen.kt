@@ -68,6 +68,25 @@ fun SettingsScreen(onOpenAbout: () -> Unit, modifier: Modifier = Modifier, onDia
             }
         }
         item {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(24.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().clickable { preferences.useMinimalHome(!preferences.minimalHome) }.padding(18.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(Modifier.weight(1f)) {
+                        Text("极简首页", style = MaterialTheme.typography.titleMedium)
+                        Text("首页只显示 OpenScope、搜索栏和四个平台；点击标题可回到设置。搜索结果照常显示。",
+                            color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+                    }
+                    Switch(checked = preferences.minimalHome, onCheckedChange = preferences::useMinimalHome)
+                }
+            }
+        }
+        item {
             Text("外观", style = MaterialTheme.typography.headlineSmall)
             Spacer(Modifier.height(4.dp))
             Text(

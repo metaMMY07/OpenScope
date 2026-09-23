@@ -1,5 +1,7 @@
 # OpenScope
 
+> 本地开发版 0.4.3 已加入极简首页、小红书热搜入口和登录后收起内容来源；尚未作为 GitHub Release 发布。见 [0.4.3 验收](docs/release-0.4.3.md)。下方下载链接仍指向已发布的 0.4.2。
+
 **面向 Android 的多平台内容搜索客户端。**输入一个关键词，可聚合浏览 Bilibili、知乎和小红书的公开内容；抖音作为可选实验来源。
 
 [下载最新 APK](https://github.com/metaMMY07/OpenScope/releases/latest) · [查看所有版本](https://github.com/metaMMY07/OpenScope/releases) · [查看 0.4.2 验收记录](docs/release-0.4.2.md)
