@@ -24,7 +24,7 @@ class LocalLibraryCodecTest {
         val json = LocalLibraryCodec.encode(
             entries = listOf(
                 LocalLibraryCodec.EntryRecord(
-                    item = item,
+                    item = item.copy(metricCounts = mapOf("likes" to 42L, "favorites" to 7L)),
                     favorite = true,
                     later = false,
                     folder = "稍后整理",
@@ -42,6 +42,8 @@ class LocalLibraryCodecTest {
         assertEquals(false, decoded.entries.single().later)
         assertEquals("稍后整理", decoded.entries.single().folder)
         assertEquals("记得引用", decoded.entries.single().note)
+        assertEquals(42L, decoded.entries.single().item.metricCounts["likes"])
+        assertEquals(7L, decoded.entries.single().item.metricCounts["favorites"])
         assertEquals(1_700_000_010L, decoded.history.single().visitedAt)
     }
 

@@ -174,7 +174,8 @@ class XhsPageClient(private val context: Context, private val sessions: SessionS
                     ?: return@mapNotNull null
                 if (id in excluded || row.optString("title").isBlank()) return@mapNotNull null
                 SearchItem(id, Platform.XHS, row.optString("title"), row.optString("author"), "", url,
-                    row.optString("thumbnail"), row.optString("metric"), engagement = displayCount(row.optString("metric")))
+                    row.optString("thumbnail"), row.optString("metric"), engagement = displayCount(row.optString("metric")),
+                    metricCounts = displayCount(row.optString("metric"))?.let { mapOf("likes" to it) }.orEmpty())
             }.distinctBy { it.id }
         }
     }

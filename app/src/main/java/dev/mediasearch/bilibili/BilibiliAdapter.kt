@@ -235,7 +235,15 @@ class BilibiliAdapter(private val transport: HttpTransport) : SearchAdapter {
             engagement = listOf("like", "favorites", "review", "video_review").mapNotNull { key ->
                 raw.optLong(key, -1).takeIf { it >= 0 }
             }.takeIf { it.isNotEmpty() }?.sum(),
-            views = dev.mediasearch.core.displayCount(raw.optString("play"))
+            views = dev.mediasearch.core.displayCount(raw.optString("play")),
+            metricCounts = buildMap {
+                mapOf("likes" to "like", "favorites" to "favorites", "comments" to "review",
+                    "danmaku" to "video_review", "coins" to "coins").forEach { (label, key) ->
+                    if (raw.has(key) && !raw.isNull(key)) {
+                        dev.mediasearch.core.displayCount(raw.optString(key))?.let { put(label, it) }
+                    }
+                }
+            }
         )
     }
 

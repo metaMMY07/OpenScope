@@ -273,6 +273,10 @@ public class ZhihuAdapter(
                 metric = metric,
                 publishedAt = objectValue.optLong("created_time", objectValue.optLong("created", 0)).takeIf { it > 0 },
                 engagement = objectValue.optLong("voteup_count", -1).takeIf { it >= 0 },
+                metricCounts = buildMap {
+                    objectValue.optLong("voteup_count", -1).takeIf { it >= 0 }?.let { put("likes", it) }
+                    objectValue.optLong("comment_count", -1).takeIf { it >= 0 }?.let { put("comments", it) }
+                }
             )
         }
         if (supportedCount > 0 && result.isEmpty()) {

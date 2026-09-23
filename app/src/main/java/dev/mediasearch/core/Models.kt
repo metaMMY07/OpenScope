@@ -18,7 +18,9 @@ data class SearchItem(
     val metric: String = "",
     val publishedAt: Long? = null,
     val engagement: Long? = null,
-    val views: Long? = null
+    val views: Long? = null,
+    /** Exact, labelled counts returned by a platform; absent keys must not be inferred. */
+    val metricCounts: Map<String, Long> = emptyMap()
 )
 
 data class SearchPage(val items: List<SearchItem>, val hasMore: Boolean, val page: Int)

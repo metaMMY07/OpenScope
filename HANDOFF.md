@@ -1,4 +1,6 @@
-# 接手入口：OpenScope Android 本地开发版 0.4.0
+# 接手入口：OpenScope Android 本地开发版 0.4.1
+
+**2026-09-23 后续更新：**源码与 APK 已升级到 0.4.1。四平台官方图标、左侧缩略图和更清晰的结果/收藏卡片已实现；发布与互动数据按平台实际字段显示。最新记录见 [docs/release-0.4.1.md](docs/release-0.4.1.md) 与 [docs/brand-assets.md](docs/brand-assets.md)。下方 0.4.0 与 0.3.0 条目均为历史记录。
 
 **2026-09-23 更新：**当前工作分支为 `codex/siye-android-parity`，绝对目录 `D:\OpenScope`。本地 APK 为 `artifacts/OpenScope-0.4.0-arm64-v8a.apk`，最新完整验收见 [docs/release-0.4.0.md](docs/release-0.4.0.md)。0.4.0 加入 SiYe 对照中的内容库、热搜、结果工具、B 站收藏有限导入和默认关闭的抖音实验入口。54 项 JVM 测试、lint 与 Release 构建通过；模拟器覆盖安装成功。当前修改尚未推送或发布。以下 0.3.0 记录仅为历史状态，尤其“Douyin 已砍”已被本轮实验入口取代；抖音已登录搜索仍未经验证。
 

@@ -7,6 +7,7 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -56,6 +57,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.mediasearch.SearchViewModel
 import dev.mediasearch.core.Platform
 import dev.mediasearch.core.ResultTools
+import dev.mediasearch.core.ResultMetadata
 import dev.mediasearch.core.SearchItem
 import dev.mediasearch.library.HistoryEntry
 import dev.mediasearch.library.LibraryEntry
@@ -474,21 +476,36 @@ private fun LibraryEntryCard(
 ) {
     Card(
         modifier = Modifier.fillMaxWidth().clickable(onClick = onOpen),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)
+        shape = RoundedCornerShape(18.dp),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
-        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text(entry.item.title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold, maxLines = 3, overflow = TextOverflow.Ellipsis)
-            if (entry.item.summary.isNotBlank()) {
-                Text(entry.item.summary, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodyMedium, maxLines = 3, overflow = TextOverflow.Ellipsis)
+        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.Top) {
+                if (entry.item.thumbnailUrl.isNotBlank()) ResultPreview(entry.item)
+                Text(entry.item.title, modifier = Modifier.weight(1f), style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold, maxLines = 3, overflow = TextOverflow.Ellipsis)
             }
-            Text(
-                "${entry.item.platform.label} · ${entry.item.author.ifBlank { "未知作者" }}",
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                style = MaterialTheme.typography.labelMedium,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
+            if (entry.item.summary.isNotBlank()) Text(entry.item.summary,
+                color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall,
+                maxLines = 3, overflow = TextOverflow.Ellipsis)
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(7.dp)) {
+                PlatformLogo(entry.item.platform, 20.dp)
+                Text("${entry.item.platform.label} · ${entry.item.author.ifBlank { "未知作者" }}",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelMedium,
+                    maxLines = 1, overflow = TextOverflow.Ellipsis)
+            }
+            val facts = ResultMetadata.facts(entry.item)
+            if (facts.isNotEmpty()) FlowRow(horizontalArrangement = Arrangement.spacedBy(7.dp),
+                verticalArrangement = Arrangement.spacedBy(5.dp)) {
+                facts.forEach { fact ->
+                    Surface(shape = RoundedCornerShape(8.dp), color = MaterialTheme.colorScheme.surfaceContainerHigh) {
+                        Text("${fact.label} ${fact.value}", modifier = Modifier.padding(horizontal = 7.dp, vertical = 4.dp),
+                            style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
+            }
             if (entry.folder.isNotBlank() || entry.note.isNotBlank()) {
                 Text(
                     listOf(entry.folder.takeIf { it.isNotBlank() }, entry.note.takeIf { it.isNotBlank() }).filterNotNull().joinToString(" · "),
@@ -498,6 +515,7 @@ private fun LibraryEntryCard(
                     overflow = TextOverflow.Ellipsis
                 )
             }
+            androidx.compose.material3.HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
             FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 TextButton(onClick = onFavorite) { Text(if (entry.favorite) "已收藏" else "收藏") }
                 TextButton(onClick = onLater) { Text(if (entry.later) "已稍后" else "稍后") }

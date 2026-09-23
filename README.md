@@ -15,9 +15,9 @@ Kotlin + Jetpack Compose + Material 3 聚合搜索 Android 客户端，面向 Bi
 | --- | --- | --- |
 | ![OpenScope 搜索页](docs/images/openscope-search.jpg) | ![OpenScope 设置页](docs/images/openscope-settings.jpg) | ![OpenScope 账号页](docs/images/openscope-accounts.jpg) |
 
-## 本地开发版：0.4.0
+## 本地开发版：0.4.1
 
-本地 ARM64 安装包：[OpenScope-0.4.0-arm64-v8a.apk](artifacts/OpenScope-0.4.0-arm64-v8a.apk)。新增本地内容库、收藏/稍后/历史、文件夹与备注、备份及导出、结果筛选排序、三平台公开热搜、B 站平台收藏有限导入，以及抖音实验入口。详见 [0.4.0 验收与功能对照](docs/release-0.4.0.md)。此版本尚未公开发布；抖音和小红书已登录搜索仍待真实账号验证。
+本地 ARM64 安装包：[OpenScope-0.4.1-arm64-v8a.apk](artifacts/OpenScope-0.4.1-arm64-v8a.apk)。0.4.1 将四个平台的占位字符换成官方图标，搜索与内容库卡片增加左侧封面、清楚的边框和可用的发布日期、播放、点赞、收藏等数据；缺失字段不编造。详见 [0.4.1 验收](docs/release-0.4.1.md)。0.4.0 的内容库、导出与抖音实验入口记录见 [功能对照](docs/release-0.4.0.md)。这两个版本均未公开发布。
 
 ## 最新公开版本：v0.1.1
 
@@ -55,7 +55,8 @@ pwsh -File .\scripts\build-local.ps1 -Target Verify
 
 - [HANDOFF.md](HANDOFF.md)：接手顺序、当前交付与待办。
 - [ASTRA-HANDOFF.md](ASTRA-HANDOFF.md)：D 盘迁移、远端发布和继续开发入口。
-- [docs/release-0.4.0.md](docs/release-0.4.0.md)：当前本地开发版验收与 SiYe 功能对照。
+- [docs/release-0.4.1.md](docs/release-0.4.1.md)：当前本地开发版视觉与数据验收。
+- [docs/release-0.4.0.md](docs/release-0.4.0.md)：SiYe 功能对照与上一版验收。
 - [docs/release-0.3.0.md](docs/release-0.3.0.md)：公开版 0.3.0 包体、签名、测试与截图证据。
 - [docs/release-0.2.0.md](docs/release-0.2.0.md)：上一版历史验收记录。
 - [docs/build-setup.md](docs/build-setup.md)：工具链说明。

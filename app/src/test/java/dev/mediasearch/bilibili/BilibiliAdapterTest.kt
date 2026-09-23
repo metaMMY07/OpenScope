@@ -36,7 +36,8 @@ class BilibiliAdapterTest {
                 result = """
                     [{"bvid":"BV1TEST","aid":123,"title":"<em class=\"keyword\">Kotlin</em> &amp; Android",
                       "author":"<em class=\"keyword\">阿明</em>","description":"<p>摘要&nbsp;内容</p>",
-                      "arcurl":"//www.bilibili.com/video/BV1TEST","pic":"//i0.hdslb.com/a.jpg","play":42}]
+                      "arcurl":"//www.bilibili.com/video/BV1TEST","pic":"//i0.hdslb.com/a.jpg","play":42,
+                      "like":12,"favorites":3,"review":2,"pubdate":1700000000}]
                 """
             )
         )
@@ -50,6 +51,11 @@ class BilibiliAdapterTest {
         assertEquals("https://www.bilibili.com/video/BV1TEST", item.url)
         assertEquals("https://i0.hdslb.com/a.jpg", item.thumbnailUrl)
         assertEquals("42次播放", item.metric)
+        assertEquals(42L, item.views)
+        assertEquals(1_700_000_000L, item.publishedAt)
+        assertEquals(12L, item.metricCounts["likes"])
+        assertEquals(3L, item.metricCounts["favorites"])
+        assertEquals(2L, item.metricCounts["comments"])
         assertTrue(page.hasMore)
         assertEquals(1, page.page)
         assertTrue(transport.urls.any { it.startsWith("https://api.bilibili.com/x/web-interface/wbi/search/type?") })

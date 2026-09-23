@@ -37,7 +37,7 @@ class ZhihuAdapterTest {
                               "type":"answer","id":"42","title":"Q title",
                               "question":{"id":"7","title":"Question"},
                               "excerpt":"<p>Hello &amp; world</p>",
-                              "author":{"name":"Alice"},"voteup_count":8
+                              "author":{"name":"Alice"},"voteup_count":8,"comment_count":3
                             }},
                             {"type":"search_result","object":{
                               "type":"article","id":"99","title":"Article",
@@ -70,6 +70,8 @@ class ZhihuAdapterTest {
         assertEquals("Hello & world", page.items[0].summary)
         assertEquals("https://www.zhihu.com/question/7/answer/42", page.items[0].url)
         assertEquals("Alice", page.items[0].author)
+        assertEquals(8L, page.items[0].metricCounts["likes"])
+        assertEquals(3L, page.items[0].metricCounts["comments"])
         assertTrue(page.hasMore)
     }
 

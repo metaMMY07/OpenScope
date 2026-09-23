@@ -44,7 +44,8 @@ fun TrendingSection(model: SearchViewModel, onSearch: (String) -> Unit) {
             TextButton(onClick = { model.fetchTrending(platform, refresh = true) }) { Text("刷新") }
         }
         Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Platform.entries.forEach { p -> FilterChip(selected = p == platform, onClick = { platform = p }, label = { Text(p.label) }) }
+            Platform.entries.forEach { p -> FilterChip(selected = p == platform, onClick = { platform = p },
+                label = { Text(p.label) }, leadingIcon = { PlatformLogo(p, 20.dp) }) }
         }
         val result = trends[platform]
         if (result == null) LinearProgressIndicator(Modifier.fillMaxWidth())

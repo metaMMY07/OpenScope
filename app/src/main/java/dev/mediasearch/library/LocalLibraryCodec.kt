@@ -101,6 +101,7 @@ object LocalLibraryCodec {
         .putOptionalLong("publishedAt", itemMetric(item, "publishedAt"))
         .putOptionalLong("engagement", itemMetric(item, "engagement"))
         .putOptionalLong("views", itemMetric(item, "views"))
+        .put("metricCounts", JSONObject(item.metricCounts))
 
     private fun decodeFolders(array: JSONArray?): List<String> {
         if (array == null) return emptyList()
@@ -177,14 +178,29 @@ object LocalLibraryCodec {
             metric = value.requiredString("metric"),
             publishedAt = value.optionalLong("publishedAt"),
             engagement = value.optionalLong("engagement"),
-            views = value.optionalLong("views")
+            views = value.optionalLong("views"),
+            metricCounts = decodeMetricCounts(value.opt("metricCounts"))
         )
     }
 
     internal fun buildSearchItem(
         id: String, platform: Platform, title: String, author: String, summary: String, url: String,
-        thumbnailUrl: String, metric: String, publishedAt: Long?, engagement: Long?, views: Long?
-    ): SearchItem = SearchItem(id, platform, title, author, summary, url, thumbnailUrl, metric, publishedAt, engagement, views)
+        thumbnailUrl: String, metric: String, publishedAt: Long?, engagement: Long?, views: Long?,
+        metricCounts: Map<String, Long> = emptyMap()
+    ): SearchItem = SearchItem(id, platform, title, author, summary, url, thumbnailUrl, metric, publishedAt, engagement, views, metricCounts)
+
+    internal fun decodeMetricCounts(raw: Any?): Map<String, Long> {
+        if (raw == null || raw == JSONObject.NULL) return emptyMap()
+        require(raw is JSONObject && raw.length() <= 10) { "互动数据格式无效" }
+        return buildMap {
+            for (key in raw.keys()) {
+                require(key in setOf("likes", "favorites", "comments", "coins", "danmaku", "shares")) { "未知互动数据" }
+                val value = raw.get(key)
+                require(value is Number && value !is Float && value !is Double && value.toLong() >= 0) { "互动数据必须是非负整数" }
+                put(key, value.toLong())
+            }
+        }
+    }
 
     internal fun itemMetric(item: SearchItem, name: String): Long? = when (name) {
         "publishedAt" -> item.publishedAt

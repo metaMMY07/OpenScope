@@ -1,6 +1,6 @@
 # OpenScope 项目迁移交接（给 Astra）
 
-**2026-09-23 当前入口：**项目仍在 `D:\OpenScope`，但工作分支已变为 `codex/siye-android-parity`，本地 0.4.0 开发版已构建，验收与 SiYe 对照见 [docs/release-0.4.0.md](docs/release-0.4.0.md)。下文为 2026-09-15 的迁移/公开版历史记录，不能据此判断当前分支、源码版本或抖音功能状态。当前修改尚未推送或公开发布。
+**2026-09-23 当前入口：**项目仍在 `D:\OpenScope`，工作分支为 `codex/siye-android-parity`；最新本地开发版为 0.4.1，验收见 [docs/release-0.4.1.md](docs/release-0.4.1.md)，SiYe 功能对照见 [docs/release-0.4.0.md](docs/release-0.4.0.md)。下文为 2026-09-15 的迁移/公开版历史记录，不能据此判断当前分支、源码版本或抖音功能状态。当前修改尚未推送或公开发布。
 
 更新时间：2026-09-15（Asia/Taipei）
 

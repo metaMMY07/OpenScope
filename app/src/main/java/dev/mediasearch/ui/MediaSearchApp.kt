@@ -1,6 +1,7 @@
 package dev.mediasearch.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.BorderStroke
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -22,7 +23,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.mediasearch.*
@@ -163,7 +163,9 @@ fun MediaSearchApp(model: SearchViewModel) {
                         item {
                             Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                 Platform.entries.forEach { platform ->
-                                    FilterChip(selected = platform in state.enabled, onClick = { model.togglePlatform(platform) }, label = { Text(platform.label + if (platform == Platform.DOUYIN) " · 实验" else "") })
+                                    FilterChip(selected = platform in state.enabled, onClick = { model.togglePlatform(platform) },
+                                        label = { Text(platform.label + if (platform == Platform.DOUYIN) " · 实验" else "") },
+                                        leadingIcon = { PlatformLogo(platform, 20.dp) })
                                 }
                             }
                         }
@@ -335,10 +337,7 @@ private fun accountActionLabel(status: SessionStatus?): String =
 
 @Composable
 private fun PlatformMark(platform: Platform) {
-    val label = when (platform) { Platform.BILIBILI -> "b"; Platform.ZHIHU -> "知"; Platform.XHS -> "红"; Platform.DOUYIN -> "抖" }
-    Box(Modifier.size(36.dp).clip(RoundedCornerShape(12.dp)).background(MaterialTheme.colorScheme.secondaryContainer), contentAlignment = Alignment.Center) {
-        Text(label, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSecondaryContainer, fontSize = 17.sp)
-    }
+    PlatformLogo(platform)
 }
 
 @Composable
@@ -354,16 +353,39 @@ private fun StatusCard(message: String, action: String, onAction: () -> Unit, al
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun ResultCard(item: SearchItem, favorite: Boolean, later: Boolean, onFavorite: () -> Unit, onLater: () -> Unit, filter: String = "", onOpen: () -> Unit) {
-    Card(onClick = onOpen, shape = RoundedCornerShape(22.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)) {
-        Column(Modifier.fillMaxWidth().padding(18.dp), verticalArrangement = Arrangement.spacedBy(9.dp)) {
-            Text(highlight(item.title, filter, MaterialTheme.colorScheme.primary), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold, maxLines = 3, overflow = TextOverflow.Ellipsis)
-            if (item.summary.isNotBlank()) Text(item.summary, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 3, overflow = TextOverflow.Ellipsis)
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(item.author, modifier = Modifier.weight(1f), style = MaterialTheme.typography.labelMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                Text(item.metric.ifBlank { "查看原文 ↗" }, color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelMedium)
+    Card(onClick = onOpen, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(18.dp),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.Top) {
+                if (item.thumbnailUrl.isNotBlank()) ResultPreview(item)
+                Text(highlight(item.title, filter, MaterialTheme.colorScheme.primary), modifier = Modifier.weight(1f),
+                    style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold,
+                    maxLines = 3, overflow = TextOverflow.Ellipsis)
             }
+            if (item.summary.isNotBlank()) Text(item.summary, style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 3, overflow = TextOverflow.Ellipsis)
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(7.dp)) {
+                PlatformLogo(item.platform, 20.dp)
+                Text("${item.platform.label} · ${item.author.ifBlank { "未知作者" }}",
+                    style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1, overflow = TextOverflow.Ellipsis)
+            }
+            val facts = ResultMetadata.facts(item)
+            if (facts.isNotEmpty()) FlowRow(horizontalArrangement = Arrangement.spacedBy(7.dp),
+                verticalArrangement = Arrangement.spacedBy(5.dp)) {
+                facts.forEach { fact ->
+                    Surface(shape = RoundedCornerShape(8.dp), color = MaterialTheme.colorScheme.surfaceContainerHigh) {
+                        Text("${fact.label} ${fact.value}", modifier = Modifier.padding(horizontal = 7.dp, vertical = 4.dp),
+                            style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
+            }
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 TextButton(onClick = onFavorite) { Text(if (favorite) "已收藏" else "收藏") }
                 TextButton(onClick = onLater) { Text(if (later) "已加入稍后" else "稍后再看") }

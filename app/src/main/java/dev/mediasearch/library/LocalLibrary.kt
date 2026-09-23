@@ -4,6 +4,7 @@ import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
+import org.json.JSONObject
 import dev.mediasearch.core.BrowserProfile
 import dev.mediasearch.core.Platform
 import dev.mediasearch.core.SearchItem
@@ -50,18 +51,18 @@ class LocalLibrary(
         const val MAX_HISTORY = 1000
         const val MAX_NOTE_LENGTH = LocalLibraryCodec.MAX_NOTE_LENGTH
         const val MAX_FOLDER_LENGTH = LocalLibraryCodec.MAX_FOLDER_LENGTH
-        private const val DATABASE_VERSION = 1
+        private const val DATABASE_VERSION = 2
         private const val TABLE_ENTRIES = "library_entries"
         private const val TABLE_HISTORY = "library_history"
         private const val TABLE_FOLDERS = "library_folders"
         private val RESERVED_FOLDER_NAMES = setOf("全部", "全部收藏", "默认收藏夹", "稍后再看")
         private val ENTRY_COLUMNS = arrayOf(
             "platform", "item_id", "title", "author", "summary", "url", "thumbnail_url", "metric",
-            "published_at", "engagement", "views", "favorite", "later", "folder", "note", "saved_at"
+            "published_at", "engagement", "views", "metric_counts", "favorite", "later", "folder", "note", "saved_at"
         )
         private val HISTORY_COLUMNS = arrayOf(
             "platform", "item_id", "title", "author", "summary", "url", "thumbnail_url", "metric",
-            "published_at", "engagement", "views", "visited_at"
+            "published_at", "engagement", "views", "metric_counts", "visited_at"
         )
     }
 
@@ -468,7 +469,8 @@ class LocalLibrary(
             metric = cursor.getString(cursor.getColumnIndexOrThrow("metric")),
             publishedAt = cursor.nullableLong("published_at"),
             engagement = cursor.nullableLong("engagement"),
-            views = cursor.nullableLong("views")
+            views = cursor.nullableLong("views"),
+            metricCounts = LocalLibraryCodec.decodeMetricCounts(JSONObject(cursor.getString(cursor.getColumnIndexOrThrow("metric_counts"))))
         )
 
     private fun findEntry(database: SQLiteDatabase, item: SearchItem): ExistingEntry? {
@@ -536,6 +538,7 @@ class LocalLibrary(
         putOptional("published_at", LocalLibraryCodec.itemMetric(item, "publishedAt"))
         putOptional("engagement", LocalLibraryCodec.itemMetric(item, "engagement"))
         putOptional("views", LocalLibraryCodec.itemMetric(item, "views"))
+        put("metric_counts", JSONObject(item.metricCounts).toString())
     }
 
     private fun deleteEntry(database: SQLiteDatabase, item: SearchItem) {
@@ -609,6 +612,7 @@ class LocalLibrary(
                     published_at INTEGER,
                     engagement INTEGER,
                     views INTEGER,
+                    metric_counts TEXT NOT NULL DEFAULT '{}',
                     favorite INTEGER NOT NULL DEFAULT 0,
                     later INTEGER NOT NULL DEFAULT 0,
                     folder TEXT NOT NULL DEFAULT '',
@@ -632,6 +636,7 @@ class LocalLibrary(
                     published_at INTEGER,
                     engagement INTEGER,
                     views INTEGER,
+                    metric_counts TEXT NOT NULL DEFAULT '{}',
                     visited_at INTEGER NOT NULL,
                     PRIMARY KEY (platform, item_id)
                 )
@@ -648,7 +653,10 @@ class LocalLibrary(
         }
 
         override fun onUpgrade(database: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-            // Version 1 is the first on-device schema. Future versions must migrate in place.
+            if (oldVersion < 2) {
+                database.execSQL("ALTER TABLE $TABLE_ENTRIES ADD COLUMN metric_counts TEXT NOT NULL DEFAULT '{}'")
+                database.execSQL("ALTER TABLE $TABLE_HISTORY ADD COLUMN metric_counts TEXT NOT NULL DEFAULT '{}'")
+            }
             onCreateIfMissing(database)
         }
 
