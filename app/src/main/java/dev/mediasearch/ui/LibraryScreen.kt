@@ -161,7 +161,7 @@ fun LibraryScreen(
                     output.toByteArray()
                 } ?: error("无法读取备份文件")
             }
-            require(bytes.size <= LocalLibraryCodec.MAX_BACKUP_BYTES) { "备份文件超过 2MB" }
+            require(bytes.size <= LocalLibraryCodec.MAX_BACKUP_BYTES) { "备份文件超过 16MB" }
             val added = model.library.importBackup(bytes.toString(Charsets.UTF_8))
             model.notify("已合并导入 $added 条本机条目")
         }

@@ -4,11 +4,11 @@
 
 ## 安装包与实测
 
-- ARM64：[OpenScope-0.4.0-arm64-v8a.apk](../artifacts/OpenScope-0.4.0-arm64-v8a.apk)，10,632,219 bytes；SHA-256 `DCE46F771B6794C24053FC4F3ED197C5DD7994D10CEEBEACB0CF0803FAA0CABA`。
+- ARM64：[OpenScope-0.4.0-arm64-v8a.apk](../artifacts/OpenScope-0.4.0-arm64-v8a.apk)，10,632,219 bytes；SHA-256 `E5ECB25DE88CD515C41EAB16C7DAF0853951215399C69E9A258599419754E29D`。
 - x86_64：[OpenScope-0.4.0-x86_64.apk](../artifacts/OpenScope-0.4.0-x86_64.apk)，11,326,053 bytes，供模拟器验收。
 - 包名 `dev.mediasearch`，versionCode 4，versionName 0.4.0，minSdk 29。APK 签名校验通过；证书 SHA-256 `583079a20081a1bedaf8c1fbdf93e92bf3cc3544e0f7246fef7b1625d9066a02`，仍为内部测试 debug key。正式分发应使用私有发布签名。
-- [最终 Verify 日志](../artifacts/build-0.4-delivery.log)：Debug、Release/R8、53 项 JVM 单测与 lint 通过；lint 0 error / 31 warnings；耗时 1m 09s。
-- API 35 `emulator-5580` 覆盖安装 x86_64 Release 成功，ADB install 实测 1457 ms；强停后单次 Activity 冷启动 `am start -W` TotalTime 987 ms。这是模拟器单次样本，不等于真机安装时间或可感知首屏时间，也未达到冷启动 <0.5s 目标。
+- [最终 Verify 日志](../artifacts/build-0.4-delivery-final.log)：Debug、Release/R8、54 项 JVM 单测与 lint 通过；lint 0 error / 31 warnings；耗时 2m 02s。备份上限统一为 16 MB；新增满额内容库和历史记录的备份往返测试。
+- API 35 `emulator-5580` 覆盖安装 x86_64 Release 成功；一次 ADB install 实测 1457 ms。最终包在模拟器重启后安装并冷启动，`am start -W` TotalTime 2358 ms；同轮此前一次强停后样本为 987 ms。这些是模拟器单次样本，不等于真机安装时间或可感知首屏时间，也未达到冷启动 <0.5s 目标。覆盖安装后原有收藏和稍后状态仍在，[界面节点证据](../artifacts/final-lib2.xml)。
 - 实际 Bilibili 搜索 `Android` 一次返回 20 条，网络搜索日志为 1300 ms；每来源界面初始显示 3 条，更多优先展开已加载结果。此单次样本没有达到热搜索 <1s 目标，不代表延迟分布。[日志](../artifacts/search-0.4-metrics.txt)。
 
 ## 与主项目 SiYe 的功能对照

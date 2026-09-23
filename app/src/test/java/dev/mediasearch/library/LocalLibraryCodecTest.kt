@@ -5,6 +5,7 @@ import dev.mediasearch.core.SearchItem
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertTrue
 
 class LocalLibraryCodecTest {
     private val item = SearchItem(
@@ -58,5 +59,27 @@ class LocalLibraryCodecTest {
         assertFailsWith<IllegalArgumentException> {
             LocalLibraryCodec.decode(valid.replace("\"favorite\":true", "\"favorite\":1"))
         }
+    }
+
+    @Test
+    fun fullLibraryBackupCanBeImportedWhenLargerThanOldTwoMegabyteLimit() {
+        val longSummary = "内容".repeat(700)
+        val entries = (0 until 500).map { index ->
+            LocalLibraryCodec.EntryRecord(
+                item.copy(id = "BV$index", summary = longSummary),
+                favorite = true, later = false, folder = "", note = "", savedAt = 1L
+            )
+        }
+        val history = (0 until 1000).map { index ->
+            LocalLibraryCodec.HistoryRecord(
+                item.copy(id = "history-$index", summary = longSummary),
+                visitedAt = 2L
+            )
+        }
+        val json = LocalLibraryCodec.encode(entries, history, emptyList())
+        assertTrue(json.toByteArray(Charsets.UTF_8).size > 2 * 1024 * 1024)
+        val decoded = LocalLibraryCodec.decode(json)
+        assertEquals(500, decoded.entries.size)
+        assertEquals(1000, decoded.history.size)
     }
 }

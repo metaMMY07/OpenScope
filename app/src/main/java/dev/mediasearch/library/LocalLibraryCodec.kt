@@ -12,7 +12,7 @@ object LocalLibraryCodec {
     const val MAX_FOLDER_LENGTH = 60
     const val MAX_ITEMS = 500
     const val MAX_HISTORY = 1000
-    const val MAX_BACKUP_BYTES = 2 * 1024 * 1024
+    const val MAX_BACKUP_BYTES = 16 * 1024 * 1024
 
     internal object MergePolicy {
         /** Existing user edits win, including a deliberately cleared note/default folder. */
@@ -52,12 +52,16 @@ object LocalLibraryCodec {
         root.put("folders", JSONArray().also { array -> folders.forEach(array::put) })
         root.put("items", JSONArray().also { array -> entries.forEach { array.put(encodeEntry(it)) } })
         root.put("history", JSONArray().also { array -> history.forEach { array.put(encodeHistory(it)) } })
-        return root.toString()
+        return root.toString().also { json ->
+            require(json.toByteArray(Charsets.UTF_8).size <= MAX_BACKUP_BYTES) {
+                "备份文件超过 16MB"
+            }
+        }
     }
 
     fun decode(json: String): Backup {
         require(json.toByteArray(Charsets.UTF_8).size <= MAX_BACKUP_BYTES) {
-            "备份文件超过 2MB"
+            "备份文件超过 16MB"
         }
         val root = try {
             JSONObject(json)
