@@ -1,10 +1,10 @@
 # OpenScope
 
-> 0.4.8 已发布。当前版本修复窄屏首页四个平台按钮裁切，并完善 B 站、知乎和抖音官方网页的手机适配；抖音视频详情页支持横屏全屏播放。见 [0.4.8 验收](docs/release-0.4.8.md)。
+> 0.4.10 已发布。内置平台网页已移除顶部工具条和刷新悬浮按钮；视频全屏使用 Android 系统返回手势退出。见 [0.4.10 验收](docs/release-0.4.10.md)。
 
 **面向 Android 的多平台内容搜索客户端。**输入一个关键词，可聚合浏览 Bilibili、知乎和小红书的公开内容；抖音作为可选实验来源。
 
-[下载最新 APK](https://github.com/metaMMY07/OpenScope/releases/latest) · [查看所有版本](https://github.com/metaMMY07/OpenScope/releases) · [查看 0.4.8 验收记录](docs/release-0.4.8.md)
+[下载最新 APK](https://github.com/metaMMY07/OpenScope/releases/latest) · [查看所有版本](https://github.com/metaMMY07/OpenScope/releases) · [查看 0.4.10 验收记录](docs/release-0.4.10.md)
 
 ![GitHub Release](https://img.shields.io/github/v/release/metaMMY07/OpenScope?display_name=tag) ![Android 10+](https://img.shields.io/badge/Android-10%2B-3DDC84?logo=android&logoColor=white) ![Kotlin](https://img.shields.io/badge/Kotlin-Compose-7F52FF?logo=kotlin&logoColor=white)
 
@@ -25,7 +25,7 @@
 
 ## 下载和安装
 
-从 [GitHub Releases](https://github.com/metaMMY07/OpenScope/releases/latest) 下载已发布版本。ARM64 包 `OpenScope-0.4.8-arm64-v8a.apk` 用于大多数 Android 手机，安装包约 10.8 MB；最低支持 Android 10（API 29）。Android 会要求允许从当前来源安装 APK。
+从 [GitHub Releases](https://github.com/metaMMY07/OpenScope/releases/latest) 下载已发布版本。ARM64 包 `OpenScope-0.4.10-arm64-v8a.apk` 用于大多数 Android 手机，安装包约 10.8 MB；最低支持 Android 10（API 29）。Android 会要求允许从当前来源安装 APK。
 
 当前 APK 使用内部测试签名，适合侧载测试；若未来签名密钥更换，可能需要先卸载旧版本才能安装新版。x86_64 包仅用于模拟器。
 
