@@ -1,10 +1,10 @@
 # OpenScope
 
-> 0.4.4 已发布。0.4.6 本地测试版进一步修复 B 站手机视频页的滚动遮挡，并加入横屏全屏播放。见 [0.4.6 验收](docs/release-0.4.6.md)。
+> 0.4.8 已发布。当前版本修复窄屏首页四个平台按钮裁切，并完善 B 站、知乎和抖音官方网页的手机适配；抖音视频详情页支持横屏全屏播放。见 [0.4.8 验收](docs/release-0.4.8.md)。
 
 **面向 Android 的多平台内容搜索客户端。**输入一个关键词，可聚合浏览 Bilibili、知乎和小红书的公开内容；抖音作为可选实验来源。
 
-[下载最新 APK](https://github.com/metaMMY07/OpenScope/releases/latest) · [查看所有版本](https://github.com/metaMMY07/OpenScope/releases) · [查看 0.4.4 验收记录](docs/release-0.4.4.md)
+[下载最新 APK](https://github.com/metaMMY07/OpenScope/releases/latest) · [查看所有版本](https://github.com/metaMMY07/OpenScope/releases) · [查看 0.4.8 验收记录](docs/release-0.4.8.md)
 
 ![GitHub Release](https://img.shields.io/github/v/release/metaMMY07/OpenScope?display_name=tag) ![Android 10+](https://img.shields.io/badge/Android-10%2B-3DDC84?logo=android&logoColor=white) ![Kotlin](https://img.shields.io/badge/Kotlin-Compose-7F52FF?logo=kotlin&logoColor=white)
 
@@ -20,12 +20,12 @@
 - 结果卡片显示可取得的封面、时间、播放量、点赞、收藏和评论数据；平台未提供的字段会留空。
 - 本地内容库支持收藏、稍后再看、历史记录、筛选、排序和数据备份。
 - Material You 界面，支持调整主题色。
-- 官方内容网页可切换手机页面与平板页面；两种模式都使用电脑网页功能。手机模式适配 B 站视频页宽度和滚动，全屏按钮可横屏播放。
+- 官方内容网页可切换手机页面与平板页面；两种模式都使用电脑网页功能。手机模式适配 B 站、知乎和抖音的页面宽度与信息布局，抖音视频详情页支持全屏横屏播放；平台网页仍在 App 内打开并保留本机会话。
 - 使用 App 内官方网页完成平台登录，会话留在本机；不需要 PC、Termux 或 root，也没有云端代抓服务。
 
 ## 下载和安装
 
-从 [GitHub Releases](https://github.com/metaMMY07/OpenScope/releases/latest) 下载已发布版本，或使用本地测试包 `artifacts/OpenScope-0.4.6-arm64-v8a.apk`，用于大多数 Android 手机。安装包约 11 MB，最低支持 Android 10（API 29）。Android 会要求允许从当前来源安装 APK。
+从 [GitHub Releases](https://github.com/metaMMY07/OpenScope/releases/latest) 下载已发布版本。ARM64 包 `OpenScope-0.4.8-arm64-v8a.apk` 用于大多数 Android 手机，安装包约 10.8 MB；最低支持 Android 10（API 29）。Android 会要求允许从当前来源安装 APK。
 
 当前 APK 使用内部测试签名，适合侧载测试；若未来签名密钥更换，可能需要先卸载旧版本才能安装新版。x86_64 包仅用于模拟器。
 
@@ -35,12 +35,12 @@
 
 | 平台 | 当前情况 |
 | --- | --- |
-| Bilibili | 原生搜索适配已接入；结果字段和登录状态以实际验证为准。 |
+| Bilibili | 原生搜索适配已接入；官方网页手机模式已适配视频页滚动和全屏播放。 |
 | 知乎 | App 内官方登录入口已接入；真实账号搜索与目标手机会话恢复仍待验证。 |
 | 小红书 | 使用官方网页会话与页面内容读取；真实账号下的搜索和分页仍待完整验证。 |
-| 抖音 | 默认关闭的实验来源。模拟器登录态下“iPhone”单次搜索返回 16 条相关视频（6185ms）；“Android”单次搜索出现偏题结果。请把搜索相关性和可用性视为不稳定。 |
+| 抖音 | 默认关闭的实验来源。搜索相关性和可用性仍不稳定；官方网页手机模式已适配精选列表、视频详情页和横屏全屏。 |
 
-遇到验证码时，请在平台官方页面自行完成。频率限制、页面改版和网络差异可能导致暂时无结果。抖音测试详情见 [0.4.2 验收记录](docs/release-0.4.2.md)。
+遇到验证码时，请在平台官方页面自行完成。频率限制、页面改版和网络差异可能导致暂时无结果。BewlyBewly 浏览器扩展没有内置到 APK；它依赖扩展后台 API，不能直接注入 Android WebView，详见 [兼容性评估](docs/bewlybewly-feasibility.md)。
 
 ## 隐私与项目来源
 
