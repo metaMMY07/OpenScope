@@ -61,9 +61,14 @@ fun PlatformBrowser(platform: Platform, initialUrl: String, login: Boolean, mode
     BackHandler { if (browserFullscreen) browserFullscreen = false else back() }
 
     LaunchedEffect(browserFullscreen, webView) {
-        if (!login && !wideLayout && platform == Platform.BILIBILI) {
-            webView?.evaluateJavascript(
-                "document.documentElement.classList.toggle('openscope-bili-fullscreen', $browserFullscreen)", null
+        if (!login && !wideLayout) {
+            val fullscreenClass = when (platform) {
+                Platform.BILIBILI -> "openscope-bili-fullscreen"
+                Platform.DOUYIN -> "openscope-douyin-fullscreen"
+                else -> null
+            }
+            if (fullscreenClass != null) webView?.evaluateJavascript(
+                "document.documentElement.classList.toggle('$fullscreenClass', $browserFullscreen)", null
             )
         }
     }
@@ -149,7 +154,8 @@ fun PlatformBrowser(platform: Platform, initialUrl: String, login: Boolean, mode
             } },
                 navigationIcon = { TextButton(onClick = { back() }) { Text("返回") } },
                 actions = {
-                    if (!login && !wideLayout && platform == Platform.BILIBILI && isVideoPage) {
+                    if (!login && !wideLayout &&
+                        (platform == Platform.BILIBILI || platform == Platform.DOUYIN) && isVideoPage) {
                         TextButton(onClick = { browserMenuExpanded = false; browserFullscreen = true }) { Text("全屏") }
                         Box {
                             IconButton(onClick = { browserMenuExpanded = true }) { Text("⋮") }
@@ -197,9 +203,15 @@ fun PlatformBrowser(platform: Platform, initialUrl: String, login: Boolean, mode
                     settings.textZoom = if (wideLayout) 100 else 115
                     val viewportAsset = if (wideLayout) "browser/desktop-viewport.js" else "browser/phone-viewport.js"
                     val viewportScript = context.assets.open(viewportAsset).bufferedReader().use { it.readText() }
-                    val phoneLayoutScript = if (!login && !wideLayout && platform == Platform.BILIBILI)
-                        context.assets.open("browser/bili-phone-layout.js").bufferedReader().use { it.readText() }
-                    else null
+                    val phoneLayoutAsset = if (!login && !wideLayout) when (platform) {
+                        Platform.BILIBILI -> "browser/bili-phone-layout.js"
+                        Platform.ZHIHU -> "browser/zhihu-phone-layout.js"
+                        Platform.DOUYIN -> "browser/douyin-phone-layout.js"
+                        Platform.XHS -> null
+                    } else null
+                    val phoneLayoutScript = phoneLayoutAsset?.let { asset ->
+                        context.assets.open(asset).bufferedReader().use { it.readText() }
+                    }
                     val startScriptSupported = WebViewFeature.isFeatureSupported(WebViewFeature.DOCUMENT_START_SCRIPT)
                     if (viewportScript != null && startScriptSupported) {
                         val root = when (platform) {
@@ -211,7 +223,7 @@ fun PlatformBrowser(platform: Platform, initialUrl: String, login: Boolean, mode
                         WebViewCompat.addDocumentStartJavaScript(this, viewportScript, setOf("https://$root", "https://*.$root"))
                         if (phoneLayoutScript != null) {
                             WebViewCompat.addDocumentStartJavaScript(this, phoneLayoutScript,
-                                setOf("https://bilibili.com", "https://*.bilibili.com"))
+                                setOf("https://$root", "https://*.$root"))
                         }
                     }
                     if ((!login || BrowserProfile.desktop(platform)) && WebViewFeature.isFeatureSupported(WebViewFeature.USER_AGENT_METADATA)) {
@@ -259,9 +271,15 @@ fun PlatformBrowser(platform: Platform, initialUrl: String, login: Boolean, mode
                         }
                         override fun onPageStarted(view: WebView, url: String?, favicon: Bitmap?) {
                             host = url?.let { Uri.parse(it).host }.orEmpty()
-                            isVideoPage = url?.contains("/video/") == true
+                            isVideoPage = url?.contains("/video/") == true ||
+                                (platform == Platform.DOUYIN && url?.contains("modal_id=") == true)
                             browserFullscreen = false
                             error = null
+                        }
+                        override fun doUpdateVisitedHistory(view: WebView, url: String?, isReload: Boolean) {
+                            super.doUpdateVisitedHistory(view, url, isReload)
+                            isVideoPage = url?.contains("/video/") == true ||
+                                (platform == Platform.DOUYIN && url?.contains("modal_id=") == true)
                         }
                         override fun onPageFinished(view: WebView, url: String?) {
                             if (viewportScript != null && !startScriptSupported && BrowserProfile.allowed(platform, url.orEmpty())) {
