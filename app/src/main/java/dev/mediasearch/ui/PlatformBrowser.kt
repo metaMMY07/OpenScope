@@ -280,6 +280,14 @@ fun PlatformBrowser(platform: Platform, initialUrl: String, login: Boolean, mode
                             super.doUpdateVisitedHistory(view, url, isReload)
                             isVideoPage = url?.contains("/video/") == true ||
                                 (platform == Platform.DOUYIN && url?.contains("modal_id=") == true)
+                            if (!login && !wideLayout && platform == Platform.DOUYIN) {
+                                // Douyin switches video routes through history without recreating the document.
+                                val directVideo = Uri.parse(url.orEmpty()).path
+                                    ?.matches(Regex("^/video/\\d+/?$")) == true
+                                view.evaluateJavascript(
+                                    "document.documentElement.classList.toggle('openscope-douyin-video', $directVideo)", null
+                                )
+                            }
                         }
                         override fun onPageFinished(view: WebView, url: String?) {
                             if (viewportScript != null && !startScriptSupported && BrowserProfile.allowed(platform, url.orEmpty())) {

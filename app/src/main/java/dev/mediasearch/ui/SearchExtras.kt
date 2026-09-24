@@ -1,10 +1,8 @@
 package dev.mediasearch.ui
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -43,10 +41,7 @@ fun TrendingSection(model: SearchViewModel, onSearch: (String) -> Unit, onOpenXh
             Text("热搜", style = MaterialTheme.typography.titleMedium)
             TextButton(onClick = { model.fetchTrending(platform, refresh = true) }) { Text("刷新") }
         }
-        Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Platform.entries.forEach { p -> FilterChip(selected = p == platform, onClick = { platform = p },
-                label = { Text(p.label) }, leadingIcon = { PlatformLogo(p, 20.dp) }) }
-        }
+        PlatformChoiceRow(selected = { it == platform }, onClick = { platform = it })
         val result = trends[platform]
         if (result == null) LinearProgressIndicator(Modifier.fillMaxWidth())
         else if (result.words.isEmpty()) {

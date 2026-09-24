@@ -2,6 +2,11 @@
 (() => {
   if (window !== window.top || window.__openScopeDouyinPhoneLayout) return;
   window.__openScopeDouyinPhoneLayout = true;
+  const syncVideoRoute = () => document.documentElement.classList.toggle(
+    'openscope-douyin-video', /^\/video\/\d+\/?$/.test(location.pathname)
+  );
+  syncVideoRoute();
+  window.addEventListener('popstate', syncVideoRoute);
   const css = `
     html, body, #root {
       width: 100% !important;
@@ -68,6 +73,98 @@
       max-width: 100vw !important;
     }
     .modal-video-container video { object-fit: contain !important; }
+    html.openscope-douyin-video #douyin-navigation,
+    html.openscope-douyin-video #douyin-header { display: none !important; }
+    html.openscope-douyin-video #douyin-right-container,
+    html.openscope-douyin-video .parent-route-container,
+    html.openscope-douyin-video .playerControlHeight {
+      box-sizing: border-box !important;
+      width: 100% !important;
+      min-width: 0 !important;
+      max-width: 100% !important;
+      margin-left: 0 !important;
+    }
+    html.openscope-douyin-video #douyin-right-container { padding-top: 0 !important; }
+    html.openscope-douyin-video .playerControlHeight { padding: 0 12px !important; }
+    html.openscope-douyin-video .leftContainer {
+      width: 100% !important;
+      min-width: 0 !important;
+    }
+    html.openscope-douyin-video .leftContainer .video-detail-container {
+      min-height: 0 !important;
+      height: clamp(260px, 70vw, 370px) !important;
+      margin-top: 12px !important;
+      border-radius: 14px !important;
+      overflow: hidden !important;
+    }
+    html.openscope-douyin-video [data-e2e="detail-video-info"] {
+      margin: 16px 0 12px !important;
+    }
+    html.openscope-douyin-video [data-e2e="detail-video-info"] h1,
+    html.openscope-douyin-video [data-e2e="detail-video-info"] h1 span {
+      font-size: 16px !important;
+      line-height: 1.4 !important;
+    }
+    html.openscope-douyin-video [data-e2e="detail-video-info"] > div:last-child {
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: stretch !important;
+      gap: 8px !important;
+      height: auto !important;
+      margin: 12px 0 0 !important;
+    }
+    html.openscope-douyin-video [data-e2e="detail-video-info"] > div:last-child > div:first-child {
+      box-sizing: border-box !important;
+      display: grid !important;
+      grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+      width: 100% !important;
+      min-width: 0 !important;
+      margin: 0 !important;
+      padding: 8px 0 !important;
+      gap: 0 !important;
+      border-block: 1px solid rgba(255, 255, 255, .12) !important;
+    }
+    html.openscope-douyin-video [data-e2e="detail-video-info"] > div:last-child > div:first-child > div {
+      box-sizing: border-box !important;
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 4px !important;
+      width: 100% !important;
+      min-width: 0 !important;
+      margin: 0 !important;
+    }
+    html.openscope-douyin-video [data-e2e="detail-video-info"] > div:last-child > div:first-child > div > div {
+      width: auto !important;
+      height: 24px !important;
+    }
+    html.openscope-douyin-video [data-e2e="detail-video-info"] > div:last-child > div:first-child > div > span {
+      width: auto !important;
+      height: auto !important;
+      font-size: 13px !important;
+      line-height: 1.3 !important;
+      white-space: nowrap !important;
+    }
+    html.openscope-douyin-video [data-e2e="video-share-container"] {
+      position: absolute !important;
+      width: 0 !important;
+      height: 0 !important;
+    }
+    html.openscope-douyin-video [data-e2e="detail-video-info"] > div:last-child > div:last-child {
+      display: flex !important;
+      flex-wrap: wrap !important;
+      align-items: center !important;
+      gap: 8px !important;
+      width: 100% !important;
+      min-width: 0 !important;
+    }
+    html.openscope-douyin-video [data-e2e="detail-video-publish-time"] {
+      width: auto !important;
+      font-size: 12px !important;
+      line-height: 1.4 !important;
+      white-space: nowrap !important;
+    }
     html.openscope-douyin-fullscreen,
     html.openscope-douyin-fullscreen body { overflow: hidden !important; }
     html.openscope-douyin-fullscreen .video-detail-container {

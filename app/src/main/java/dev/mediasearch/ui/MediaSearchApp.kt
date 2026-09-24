@@ -160,13 +160,7 @@ fun MediaSearchApp(model: SearchViewModel) {
                             )
                         }
                         item {
-                            Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                Platform.entries.forEach { platform ->
-                                    FilterChip(selected = platform in state.enabled, onClick = { model.togglePlatform(platform) },
-                                        label = { Text(platform.label + if (platform == Platform.DOUYIN) " · 实验" else "") },
-                                        leadingIcon = { PlatformLogo(platform, 20.dp) })
-                                }
-                            }
+                            PlatformChoiceRow(selected = { it in state.enabled }, onClick = model::togglePlatform)
                         }
                         if (state.query.isBlank() || showHome) {
                             if (state.query.isNotBlank()) item { OutlinedButton(onClick = { showHome = false }) { Text("查看上次搜索：${state.query}") } }
