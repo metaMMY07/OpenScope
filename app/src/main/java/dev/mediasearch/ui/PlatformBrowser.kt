@@ -291,10 +291,10 @@ fun PlatformBrowser(platform: Platform, initialUrl: String, login: Boolean, mode
                             pageFinished++
                         }
                         override fun onReceivedError(view: WebView, request: WebResourceRequest, e: WebResourceError) {
-                            if (request.isForMainFrame) error = "网页加载失败，请检查网络后刷新"
+                            if (request.isForMainFrame) error = "网页加载失败，请检查网络后返回重试"
                         }
                         override fun onReceivedHttpError(view: WebView, request: WebResourceRequest, response: WebResourceResponse) {
-                            if (request.isForMainFrame) error = "平台返回 HTTP ${response.statusCode}，可稍后刷新"
+                            if (request.isForMainFrame) error = "平台返回 HTTP ${response.statusCode}，请稍后返回重试"
                         }
                         override fun onReceivedSslError(view: WebView, handler: SslErrorHandler, e: SslError) {
                             handler.cancel()
@@ -312,11 +312,6 @@ fun PlatformBrowser(platform: Platform, initialUrl: String, login: Boolean, mode
                 }
             }, onRelease = { view -> webView = null; view.stopLoading(); view.destroy() })
         }
-        if (!browserFullscreen && !videoLandscapeImmersive) FilledTonalButton(
-            onClick = { error = null; webView?.reload() },
-            modifier = Modifier.align(Alignment.TopEnd).padding(8.dp),
-            contentPadding = PaddingValues(horizontal = 12.dp)
-        ) { Text("刷新") }
         if (videoFullscreenAvailable && !browserFullscreen && !landscape) FilledTonalButton(
             onClick = { enterFullscreen() },
             modifier = Modifier.align(Alignment.BottomEnd).padding(12.dp)
