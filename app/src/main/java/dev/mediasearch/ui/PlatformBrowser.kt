@@ -1,6 +1,9 @@
 package dev.mediasearch.ui
 
 import android.annotation.SuppressLint
+import android.content.res.Configuration
+import android.os.Handler
+import android.os.Looper
 import android.graphics.Bitmap
 import android.net.Uri
 import android.net.http.SslError
@@ -11,9 +14,10 @@ import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import dev.mediasearch.SearchViewModel
@@ -29,7 +33,6 @@ import androidx.core.view.WindowInsetsControllerCompat
 import kotlinx.coroutines.*
 
 @SuppressLint("SetJavaScriptEnabled")
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlatformBrowser(platform: Platform, initialUrl: String, login: Boolean, model: SearchViewModel,
                     onClose: () -> Unit, onVerified: () -> Unit) {
@@ -39,16 +42,20 @@ fun PlatformBrowser(platform: Platform, initialUrl: String, login: Boolean, mode
     var webView by remember { mutableStateOf<WebView?>(null) }
     var progress by remember { mutableFloatStateOf(0f) }
     val pageUrl = remember(platform, initialUrl) { BrowserProfile.visiblePageUrl(platform, initialUrl, wideLayout) }
-    var host by remember { mutableStateOf(Uri.parse(pageUrl).host.orEmpty()) }
     var error by remember { mutableStateOf<String?>(null) }
     var loginMessage by remember { mutableStateOf(if (BrowserProfile.desktop(platform)) "请使用已有账号的手机号或密码登录；可双指缩放页面" else "请使用已有账号，在平台官方页面登录") }
     var pageFinished by remember { mutableIntStateOf(0) }
     var loginRequested by remember { mutableStateOf(login && BrowserProfile.desktop(platform)) }
     var isVideoPage by remember { mutableStateOf(false) }
     var browserFullscreen by remember { mutableStateOf(false) }
-    var browserMenuExpanded by remember { mutableStateOf(false) }
+    var orientationBeforeFullscreen by rememberSaveable { mutableIntStateOf(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED) }
+    var landscapeBeforeFullscreen by rememberSaveable { mutableStateOf(false) }
     val activity = LocalActivity.current
-    val scope = rememberCoroutineScope()
+    val landscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
+    val videoFullscreenAvailable = !login && !wideLayout && isVideoPage &&
+        (platform == Platform.BILIBILI || platform == Platform.DOUYIN)
+    val videoLandscapeImmersive = !login && isVideoPage && landscape &&
+        (platform == Platform.BILIBILI || platform == Platform.DOUYIN)
     val currentOnVerified by rememberUpdatedState(onVerified)
 
     fun finish() {
@@ -58,7 +65,29 @@ fun PlatformBrowser(platform: Platform, initialUrl: String, login: Boolean, mode
         onClose()
     }
     fun back() { val view = webView; if (view?.canGoBack() == true) view.goBack() else finish() }
-    BackHandler { if (browserFullscreen) browserFullscreen = false else back() }
+    fun enterFullscreen() {
+        if (browserFullscreen) return
+        orientationBeforeFullscreen = activity?.requestedOrientation ?: ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+        landscapeBeforeFullscreen = landscape
+        browserFullscreen = true
+        activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+    }
+    fun exitFullscreen() {
+        if (!browserFullscreen) return
+        browserFullscreen = false
+        val restored = if (landscapeBeforeFullscreen) ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+            else ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+        activity?.requestedOrientation = restored
+        val original = orientationBeforeFullscreen
+        Handler(Looper.getMainLooper()).postDelayed({
+            activity?.let { browserActivity ->
+                if (!browserFullscreen && browserActivity.requestedOrientation == restored) {
+                    browserActivity.requestedOrientation = original
+                }
+            }
+        }, 900)
+    }
+    BackHandler { if (browserFullscreen) exitFullscreen() else back() }
 
     LaunchedEffect(browserFullscreen, webView) {
         if (!login && !wideLayout) {
@@ -72,21 +101,14 @@ fun PlatformBrowser(platform: Platform, initialUrl: String, login: Boolean, mode
             )
         }
     }
-    DisposableEffect(browserFullscreen, activity) {
-        val hideBars = browserFullscreen
+    DisposableEffect(browserFullscreen, videoLandscapeImmersive, activity) {
         val controller = activity?.let { WindowInsetsControllerCompat(it.window, it.window.decorView) }
-        val previousOrientation = activity?.requestedOrientation
-        if (hideBars) {
-            activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+        val immersive = browserFullscreen || videoLandscapeImmersive
+        if (immersive) {
             controller?.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
             controller?.hide(WindowInsetsCompat.Type.systemBars())
         } else controller?.show(WindowInsetsCompat.Type.systemBars())
-        onDispose {
-            if (hideBars) {
-                if (previousOrientation != null) activity?.requestedOrientation = previousOrientation
-                controller?.show(WindowInsetsCompat.Type.systemBars())
-            }
-        }
+        onDispose { if (immersive) controller?.show(WindowInsetsCompat.Type.systemBars()) }
     }
 
     LaunchedEffect(pageFinished, loginRequested) {
@@ -145,34 +167,7 @@ fun PlatformBrowser(platform: Platform, initialUrl: String, login: Boolean, mode
         }
     }
 
-    Scaffold(
-        topBar = { if (!browserFullscreen) {
-            TopAppBar(title = { Column {
-                Text(if (login) "登录${platform.label}" else platform.label, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                Text("$host · ${if (login) "官方登录" else if (wideLayout) "平板适配" else "手机适配"}", style = MaterialTheme.typography.labelSmall,
-                    maxLines = 1, overflow = TextOverflow.Ellipsis)
-            } },
-                navigationIcon = { TextButton(onClick = { back() }) { Text("返回") } },
-                actions = {
-                    if (!login && !wideLayout &&
-                        (platform == Platform.BILIBILI || platform == Platform.DOUYIN) && isVideoPage) {
-                        TextButton(onClick = { browserMenuExpanded = false; browserFullscreen = true }) { Text("全屏") }
-                        Box {
-                            IconButton(onClick = { browserMenuExpanded = true }) { Text("⋮") }
-                            DropdownMenu(expanded = browserMenuExpanded, onDismissRequest = { browserMenuExpanded = false }) {
-                                DropdownMenuItem(text = { Text("登录") }, onClick = { browserMenuExpanded = false; loginRequested = true })
-                                DropdownMenuItem(text = { Text("刷新") }, onClick = { browserMenuExpanded = false; error = null; webView?.reload() })
-                                DropdownMenuItem(text = { Text("关闭") }, onClick = { browserMenuExpanded = false; finish() })
-                            }
-                        }
-                    } else {
-                        TextButton(onClick = { finish() }) { Text("关闭") }
-                        if (BrowserProfile.desktop(platform)) TextButton(onClick = { loginRequested = true }) { Text("登录") }
-                        TextButton(onClick = { error = null; webView?.reload() }) { Text("刷新") }
-                    }
-                })
-        } }
-    ) { padding ->
+    Scaffold { padding ->
         Box(Modifier.fillMaxSize().padding(padding)) {
         Column(Modifier.fillMaxSize()) {
             if (progress < 1f) LinearProgressIndicator(progress = { progress }, modifier = Modifier.fillMaxWidth())
@@ -270,10 +265,9 @@ fun PlatformBrowser(platform: Platform, initialUrl: String, login: Boolean, mode
                             return false
                         }
                         override fun onPageStarted(view: WebView, url: String?, favicon: Bitmap?) {
-                            host = url?.let { Uri.parse(it).host }.orEmpty()
                             isVideoPage = url?.contains("/video/") == true ||
                                 (platform == Platform.DOUYIN && url?.contains("modal_id=") == true)
-                            browserFullscreen = false
+                            exitFullscreen()
                             error = null
                         }
                         override fun doUpdateVisitedHistory(view: WebView, url: String?, isReload: Boolean) {
@@ -318,10 +312,15 @@ fun PlatformBrowser(platform: Platform, initialUrl: String, login: Boolean, mode
                 }
             }, onRelease = { view -> webView = null; view.stopLoading(); view.destroy() })
         }
-        if (browserFullscreen) FilledTonalButton(
-            onClick = { browserFullscreen = false },
-            modifier = Modifier.align(Alignment.TopEnd).padding(12.dp)
-        ) { Text("退出全屏") }
+        if (!browserFullscreen && !videoLandscapeImmersive) FilledTonalButton(
+            onClick = { error = null; webView?.reload() },
+            modifier = Modifier.align(Alignment.TopEnd).padding(8.dp),
+            contentPadding = PaddingValues(horizontal = 12.dp)
+        ) { Text("刷新") }
+        if (videoFullscreenAvailable && !browserFullscreen && !landscape) FilledTonalButton(
+            onClick = { enterFullscreen() },
+            modifier = Modifier.align(Alignment.BottomEnd).padding(12.dp)
+        ) { Text("全屏") }
         }
     }
 }
