@@ -112,7 +112,7 @@ fun MediaSearchApp(model: SearchViewModel) {
         } else if (tab == 0 && (state.query.isBlank() || showHome) && LocalThemePreferences.current.minimalHome) {
             Scaffold(
                 containerColor = MaterialTheme.colorScheme.background,
-                bottomBar = { AppBottomBar(tab) { tab = it } }
+                bottomBar = { FluidBottomBar(tab) { tab = it } }
             ) { padding ->
                 MinimalSearchHome(state.input, state.enabled, model::input, model::togglePlatform,
                     onSearch = ::startSearch, onSettings = { tab = 3 }, modifier = Modifier.padding(padding))
@@ -132,10 +132,11 @@ fun MediaSearchApp(model: SearchViewModel) {
                                 modifier = Modifier.padding(start = 24.dp).size(28.dp)
                             )
                         },
+                        actions = { if (tab == 0) AppearanceToggle(Modifier.padding(end = 12.dp)) },
                         colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = MaterialTheme.colorScheme.background)
                     )
                 },
-                bottomBar = { AppBottomBar(tab) { tab = it } }
+                bottomBar = { FluidBottomBar(tab) { tab = it } }
             ) { padding ->
                 when (tab) {
                     0 -> LazyColumn(
@@ -337,21 +338,6 @@ fun MediaSearchApp(model: SearchViewModel) {
 }
 
 @Composable
-private fun AppBottomBar(selectedTab: Int, onSelect: (Int) -> Unit) {
-    NavigationBar(containerColor = MaterialTheme.colorScheme.surfaceContainer) {
-        listOf(
-            "搜索" to AppIcons.Explore,
-            "内容库" to AppIcons.Bookmark,
-            "账号" to AppIcons.Person,
-            "设置" to AppIcons.Settings
-        ).forEachIndexed { index, (label, icon) ->
-            NavigationBarItem(selected = selectedTab == index, onClick = { onSelect(index) },
-                icon = { Icon(icon, contentDescription = label) }, label = { Text(label) })
-        }
-    }
-}
-
-@Composable
 private fun MinimalSearchHome(
     input: String,
     enabled: Set<Platform>,
@@ -363,6 +349,7 @@ private fun MinimalSearchHome(
 ) {
     val keyboard = LocalSoftwareKeyboardController.current
     Box(modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
+        AppearanceToggle(Modifier.align(Alignment.TopEnd).padding(top = 12.dp, end = 16.dp))
         Column(
             modifier = Modifier.align(Alignment.Center).fillMaxWidth(0.9f).widthIn(max = 720.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -401,15 +388,11 @@ private fun MinimalSearchHome(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
-                        Surface(
-                            shape = RoundedCornerShape(14.dp),
-                            color = if (selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainerLow,
-                            border = BorderStroke(1.dp, if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant)
-                        ) {
-                            Box(Modifier.size(48.dp), contentAlignment = Alignment.Center) { PlatformLogo(platform, 28.dp) }
-                        }
+                        PlatformLogo(platform, 56.dp)
                         Text(platform.label, style = MaterialTheme.typography.labelMedium, maxLines = 1,
-                            overflow = TextOverflow.Ellipsis, color = MaterialTheme.colorScheme.onBackground)
+                            overflow = TextOverflow.Ellipsis,
+                            color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground,
+                            fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal)
                     }
                 }
             }

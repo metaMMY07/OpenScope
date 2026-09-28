@@ -1,17 +1,14 @@
 package dev.mediasearch.ui
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
@@ -31,15 +28,14 @@ internal fun PlatformLogo(platform: Platform, size: Dp = 36.dp) {
     Surface(
         modifier = Modifier.size(size),
         shape = RoundedCornerShape(size / 3),
-        color = Color.White,
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+        color = androidx.compose.ui.graphics.Color.Transparent
     ) {
         Box(contentAlignment = Alignment.Center) {
             Image(
                 painter = painterResource(resource),
                 contentDescription = "${platform.label}图标",
                 modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Fit
+                contentScale = ContentScale.Crop
             )
         }
     }
