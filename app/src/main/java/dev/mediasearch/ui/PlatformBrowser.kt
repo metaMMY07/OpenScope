@@ -8,6 +8,7 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.net.http.SslError
 import android.content.pm.ActivityInfo
+import android.widget.Toast
 import android.webkit.*
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.LocalActivity
@@ -51,6 +52,7 @@ fun PlatformBrowser(platform: Platform, initialUrl: String, login: Boolean, mode
     var orientationBeforeFullscreen by rememberSaveable { mutableIntStateOf(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED) }
     var landscapeBeforeFullscreen by rememberSaveable { mutableStateOf(false) }
     val activity = LocalActivity.current
+    val saveScope = rememberCoroutineScope()
     val landscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
     val videoFullscreenAvailable = !login && !wideLayout && isVideoPage &&
         (platform == Platform.BILIBILI || platform == Platform.DOUYIN)
@@ -138,6 +140,8 @@ fun PlatformBrowser(platform: Platform, initialUrl: String, login: Boolean, mode
     }
 
     LaunchedEffect(login, platform) {
+        // Content browsing must not run account JS and cookie scans every 1.5 seconds.
+        if (!login) return@LaunchedEffect
         var attemptedCookie: String? = null
         while (isActive) {
             delay(1500)
@@ -221,6 +225,20 @@ fun PlatformBrowser(platform: Platform, initialUrl: String, login: Boolean, mode
                                 setOf("https://$root", "https://*.$root"))
                         }
                     }
+                    if (platform == Platform.XHS && !login) {
+                        // Official XHS's "下载图片" button clicks an <a download> with a short-lived
+                        // Blob URL. A DownloadListener cannot access that Blob after the page revokes it.
+                        val imageScript = context.assets.open("browser/xhs-image-download.js")
+                            .bufferedReader().use { it.readText() }
+                        XhsImageDownloadBridge.install(this, imageScript,
+                            onImage = { bytes -> saveScope.launch {
+                                val saved = runCatching { BrowserImageSaver.save(context, bytes) }
+                                Toast.makeText(context,
+                                    if (saved.isSuccess) "图片已保存到 Pictures/OpenScope" else "图片保存失败：${saved.exceptionOrNull()?.message ?: "请重试"}",
+                                    Toast.LENGTH_SHORT).show()
+                            } },
+                            onError = { Toast.makeText(context, "图片读取失败，请重试", Toast.LENGTH_SHORT).show() })
+                    }
                     if ((!login || BrowserProfile.desktop(platform)) && WebViewFeature.isFeatureSupported(WebViewFeature.USER_AGENT_METADATA)) {
                         // Keep Chromium's installed version while requesting the desktop presentation.
                         val version = Regex("Chrome/([0-9.]+)").find(settings.userAgentString)?.groupValues?.get(1)
@@ -244,6 +262,21 @@ fun PlatformBrowser(platform: Platform, initialUrl: String, login: Boolean, mode
                     settings.mediaPlaybackRequiresUserGesture = true
                     CookieManager.getInstance().setAcceptCookie(true)
                     CookieManager.getInstance().setAcceptThirdPartyCookies(this, login)
+                    if (platform == Platform.XHS && !login) setDownloadListener { url, userAgent, _, _, contentLength ->
+                        if (contentLength > BrowserImageSaver.MAX_BYTES) {
+                            Toast.makeText(context, "图片超过 20 MB，无法保存", Toast.LENGTH_SHORT).show()
+                        } else if (url.startsWith("https://")) {
+                            val cookies = CookieManager.getInstance().getCookie(url)
+                            saveScope.launch {
+                                val saved = runCatching { BrowserImageSaver.saveHttpImage(context, url, userAgent, cookies) }
+                                Toast.makeText(context,
+                                    if (saved.isSuccess) "图片已保存到 Pictures/OpenScope" else "图片保存失败：${saved.exceptionOrNull()?.message ?: "请重试"}",
+                                    Toast.LENGTH_SHORT).show()
+                            }
+                        } else if (url.startsWith("blob:")) {
+                            Toast.makeText(context, "此设备的 WebView 暂不支持保存网页生成的图片", Toast.LENGTH_LONG).show()
+                        }
+                    }
                     webChromeClient = object : WebChromeClient() {
                         override fun onProgressChanged(view: WebView?, newProgress: Int) { progress = newProgress / 100f }
                     }
