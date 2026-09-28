@@ -7,8 +7,8 @@ import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -20,10 +20,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
@@ -32,12 +30,21 @@ import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.HazeStyle
+import dev.chrisbanes.haze.HazeTint
+import dev.chrisbanes.haze.hazeEffect
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 
-/** A lightweight Compose counterpart to LiteTale's fluid, translucent dock. */
+/** A fluid dock with a live, source-backed frosted background. */
 @Composable
-internal fun FluidBottomBar(selectedTab: Int, onSelect: (Int) -> Unit) {
+internal fun FluidBottomBar(
+    selectedTab: Int,
+    hazeState: HazeState,
+    modifier: Modifier = Modifier,
+    onSelect: (Int) -> Unit
+) {
     val destinations = listOf(
         "搜索" to AppIcons.Explore,
         "内容库" to AppIcons.Bookmark,
@@ -63,12 +70,16 @@ internal fun FluidBottomBar(selectedTab: Int, onSelect: (Int) -> Unit) {
     val colors = MaterialTheme.colorScheme
     val indicator by animateColorAsState(colors.primaryContainer, label = "导航高亮颜色")
     Column(
-        Modifier.fillMaxWidth().shadow(6.dp).background(
-            Brush.verticalGradient(listOf(
-                colors.surfaceContainerHigh.copy(alpha = 0.88f),
-                colors.surface.copy(alpha = 0.78f)
-            ))
-        )
+        modifier.fillMaxWidth()
+            .hazeEffect(
+                state = hazeState,
+                style = HazeStyle(
+                    backgroundColor = colors.surface,
+                    tint = HazeTint(colors.surface.copy(alpha = 0.62f)),
+                    blurRadius = 22.dp,
+                    noiseFactor = 0.04f
+                )
+            )
     ) {
         HorizontalDivider(thickness = 0.5.dp, color = colors.outlineVariant.copy(alpha = 0.6f))
         Box(Modifier.fillMaxWidth().height(72.dp)) {
@@ -87,12 +98,13 @@ internal fun FluidBottomBar(selectedTab: Int, onSelect: (Int) -> Unit) {
             Row(Modifier.fillMaxSize()) {
                 destinations.forEachIndexed { index, (label, icon) ->
                     val isSelected = selectedTab == index
+                    val interactionSource = remember { MutableInteractionSource() }
                     val iconScale by animateFloatAsState(if (isSelected) 1.08f else 1f,
                         animationSpec = tween(190), label = "导航图标缩放")
                     Column(
                         modifier = Modifier.weight(1f).fillMaxHeight()
                             .semantics { role = Role.Tab; selected = isSelected; contentDescription = label }
-                            .clickable { onSelect(index) },
+                            .clickable(interactionSource = interactionSource, indication = null) { onSelect(index) },
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Spacer(Modifier.height(9.dp))

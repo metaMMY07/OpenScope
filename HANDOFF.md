@@ -1,4 +1,6 @@
-# 接手入口：OpenScope Android 0.4.12 本地开发版
+# 接手入口：OpenScope Android 0.4.13 本地开发版
+
+**2026-09-28 底栏点击反馈与背景模糊：**0.4.13 使用 `versionCode=17`。移除导致整列灰色矩形的默认点击涟漪，底栏接入 Haze 1.6.9 实时背景模糊，页面可从底栏下方滚过且末尾仍可完整查看。Haze Apache 2.0 许可内置于 APK 的“来源与许可”；LiteTale 保持只读。58 项单测、Lint、Release 构建及手机/平板尺寸视觉检查通过；ARM64/x86_64 包及校验值见 [docs/release-0.4.13.md](docs/release-0.4.13.md)。
 
 **2026-09-28 极简首页图标与主题、底栏动效：**0.4.12 使用 `versionCode=16`。四平台图标占满图标位并去掉灰色外环，首页右上角可一键切换深浅色；底栏增加流动选中动效和半透明背景。LiteTale 只读参考，未修改。58 项单测、Lint、Release 构建和模拟器深浅色视觉检查通过；ARM64/x86_64 包及校验值见 [docs/release-0.4.12.md](docs/release-0.4.12.md)。
 

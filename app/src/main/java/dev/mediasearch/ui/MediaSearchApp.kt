@@ -25,12 +25,15 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.mediasearch.*
 import dev.mediasearch.core.*
 import dev.mediasearch.session.SessionStatus
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.hazeSource
 import kotlinx.coroutines.launch
 import java.net.URLEncoder
 
@@ -110,15 +113,27 @@ fun MediaSearchApp(model: SearchViewModel) {
         } else if (tab == 3 && showHelp) {
             HelpScreen(model, onBack = { showHelp = false })
         } else if (tab == 0 && (state.query.isBlank() || showHome) && LocalThemePreferences.current.minimalHome) {
+            val hazeState = remember { HazeState() }
             Scaffold(
-                containerColor = MaterialTheme.colorScheme.background,
-                bottomBar = { FluidBottomBar(tab) { tab = it } }
+                containerColor = MaterialTheme.colorScheme.background
             ) { padding ->
-                MinimalSearchHome(state.input, state.enabled, model::input, model::togglePlatform,
-                    onSearch = ::startSearch, onSettings = { tab = 3 }, modifier = Modifier.padding(padding))
+                val direction = LocalLayoutDirection.current
+                val contentInsets = PaddingValues(
+                    start = padding.calculateStartPadding(direction),
+                    top = padding.calculateTopPadding(),
+                    end = padding.calculateEndPadding(direction)
+                )
+                Box(Modifier.fillMaxSize()) {
+                    Box(Modifier.fillMaxSize().hazeSource(hazeState)) {
+                        MinimalSearchHome(state.input, state.enabled, model::input, model::togglePlatform,
+                            onSearch = ::startSearch, onSettings = { tab = 3 }, modifier = Modifier.padding(contentInsets))
+                    }
+                    FluidBottomBar(tab, hazeState, Modifier.align(Alignment.BottomCenter)) { tab = it }
+                }
             }
         } else {
             BackHandler(enabled = tab == 0 && !showHome && state.query.isNotBlank()) { showHome = true }
+            val hazeState = remember { HazeState() }
             Scaffold(
                 snackbarHost = { notice?.let { message -> Snackbar(action = { TextButton(onClick = { model.notify(null) }) { Text("知道了") } }) { Text(message) } } },
                 topBar = {
@@ -135,14 +150,21 @@ fun MediaSearchApp(model: SearchViewModel) {
                         actions = { if (tab == 0) AppearanceToggle(Modifier.padding(end = 12.dp)) },
                         colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = MaterialTheme.colorScheme.background)
                     )
-                },
-                bottomBar = { FluidBottomBar(tab) { tab = it } }
+                }
             ) { padding ->
+                val direction = LocalLayoutDirection.current
+                val contentInsets = PaddingValues(
+                    start = padding.calculateStartPadding(direction),
+                    top = padding.calculateTopPadding(),
+                    end = padding.calculateEndPadding(direction)
+                )
+                Box(Modifier.fillMaxSize()) {
+                    Box(Modifier.fillMaxSize().hazeSource(hazeState)) {
                 when (tab) {
                     0 -> LazyColumn(
                         state = searchListState,
-                        modifier = Modifier.fillMaxSize().padding(padding),
-                        contentPadding = PaddingValues(start = 20.dp, end = 20.dp, bottom = 24.dp),
+                        modifier = Modifier.fillMaxSize().padding(contentInsets),
+                        contentPadding = PaddingValues(start = 20.dp, end = 20.dp, bottom = 112.dp),
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         item {
@@ -307,11 +329,11 @@ fun MediaSearchApp(model: SearchViewModel) {
                             }
                         }
                     }
-                    1 -> pageStates.SaveableStateProvider("library") { LibraryScreen(model, modifier = Modifier.padding(padding), onOpen = ::open) }
+                    1 -> pageStates.SaveableStateProvider("library") { LibraryScreen(model, modifier = Modifier.padding(contentInsets), onOpen = ::open) }
                     2 -> LazyColumn(
                         state = accountListState,
-                        modifier = Modifier.fillMaxSize().padding(padding),
-                        contentPadding = PaddingValues(24.dp),
+                        modifier = Modifier.fillMaxSize().padding(contentInsets),
+                        contentPadding = PaddingValues(start = 24.dp, top = 24.dp, end = 24.dp, bottom = 112.dp),
                         verticalArrangement = Arrangement.spacedBy(18.dp)
                     ) {
                         item { Text("连接你的世界", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold) }
@@ -330,7 +352,10 @@ fun MediaSearchApp(model: SearchViewModel) {
                             }
                         }
                     }
-                    else -> SettingsScreen(onOpenAbout = { showAbout = true }, modifier = Modifier.padding(padding), onDiagnostics = { showHelp = true })
+                    else -> SettingsScreen(onOpenAbout = { showAbout = true }, modifier = Modifier.padding(contentInsets), onDiagnostics = { showHelp = true })
+                }
+                    }
+                    FluidBottomBar(tab, hazeState, Modifier.align(Alignment.BottomCenter)) { tab = it }
                 }
             }
         }

@@ -18,8 +18,8 @@ android {
         applicationId = "dev.mediasearch"
         minSdk = 29
         targetSdk = 35
-        versionCode = 16
-        versionName = "0.4.12"
+        versionCode = 17
+        versionName = "0.4.13"
 
         testInstrumentationRunner = "dev.mediasearch.RuntimeProbe"
     }
@@ -113,6 +113,7 @@ dependencies {
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
+    implementation("dev.chrisbanes.haze:haze:1.6.9")
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2")
 

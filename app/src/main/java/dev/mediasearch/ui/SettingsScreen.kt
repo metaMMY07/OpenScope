@@ -55,7 +55,7 @@ fun SettingsScreen(onOpenAbout: () -> Unit, modifier: Modifier = Modifier, onDia
 
     LazyColumn(
         modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(start = 20.dp, end = 20.dp, bottom = 28.dp),
+        contentPadding = PaddingValues(start = 20.dp, end = 20.dp, bottom = 112.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         item {
@@ -224,6 +224,11 @@ fun AboutScreen(onBack: () -> Unit) {
             context.assets.open("licenses/MediaCrawler-LICENSE.txt").bufferedReader().use { it.readText() }
         }.getOrDefault("许可文件暂不可用")
     }
+    val hazeLicense = remember {
+        runCatching {
+            context.assets.open("licenses/Haze-LICENSE.txt").bufferedReader().use { it.readText() }
+        }.getOrDefault("许可文件暂不可用")
+    }
 
     Scaffold(
         topBar = {
@@ -270,6 +275,12 @@ fun AboutScreen(onBack: () -> Unit) {
                     item {
                         Text(
                             "SiYe @ 31ccca4\nhttps://github.com/KellenGO/SiYe\n基于 MediaCrawler 聚合搜索方向，Android 独立维护。\n\n$license",
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                    item {
+                        Text(
+                            "Haze 1.6.9 · Apache License 2.0\nhttps://github.com/chrisbanes/haze\n\n$hazeLicense",
                             style = MaterialTheme.typography.bodySmall
                         )
                     }
