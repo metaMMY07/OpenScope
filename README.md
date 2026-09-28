@@ -1,18 +1,22 @@
 # OpenScope
 
-> 0.4.10 已发布。内置平台网页已移除顶部工具条和刷新悬浮按钮；视频全屏使用 Android 系统返回手势退出。见 [0.4.10 验收](docs/release-0.4.10.md)。
+> **0.4.14 已发布。** OpenScope 面向手机和平板，聚合搜索 Bilibili、知乎、小红书，并提供抖音实验来源；平台登录与浏览都在 App 内完成。查看 [0.4.14 版本说明](docs/release-0.4.14.md)。
 
 **面向 Android 的多平台内容搜索客户端。**输入一个关键词，可聚合浏览 Bilibili、知乎和小红书的公开内容；抖音作为可选实验来源。
 
-[下载最新 APK](https://github.com/metaMMY07/OpenScope/releases/latest) · [查看所有版本](https://github.com/metaMMY07/OpenScope/releases) · [查看 0.4.10 验收记录](docs/release-0.4.10.md)
+[下载最新 APK](https://github.com/metaMMY07/OpenScope/releases/latest) · [查看所有版本](https://github.com/metaMMY07/OpenScope/releases) · [查看 0.4.14 版本说明](docs/release-0.4.14.md)
 
 ![GitHub Release](https://img.shields.io/github/v/release/metaMMY07/OpenScope?display_name=tag) ![Android 10+](https://img.shields.io/badge/Android-10%2B-3DDC84?logo=android&logoColor=white) ![Kotlin](https://img.shields.io/badge/Kotlin-Compose-7F52FF?logo=kotlin&logoColor=white)
 
 ## 界面预览
 
-| 搜索 | 设置 | 账号 |
-| --- | --- | --- |
-| ![OpenScope 搜索页](docs/images/openscope-search.jpg) | ![OpenScope 设置页](docs/images/openscope-settings.jpg) | ![OpenScope 账号页](docs/images/openscope-accounts.jpg) |
+| 搜索首页 | 聚合结果 |
+| --- | --- |
+| ![OpenScope 搜索首页](docs/images/openscope-0414-search-home.png) | ![OpenScope 搜索结果与互动数据](docs/images/openscope-0414-results.png) |
+
+| 账号与会话 | 个性化设置 |
+| --- | --- |
+| ![OpenScope 账号页](docs/images/openscope-0414-accounts.png) | ![OpenScope 主题与网页布局设置](docs/images/openscope-0414-settings.png) |
 
 ## 主要功能
 
@@ -25,7 +29,7 @@
 
 ## 下载和安装
 
-从 [GitHub Releases](https://github.com/metaMMY07/OpenScope/releases/latest) 下载已发布版本。ARM64 包 `OpenScope-0.4.10-arm64-v8a.apk` 用于大多数 Android 手机，安装包约 10.8 MB；最低支持 Android 10（API 29）。Android 会要求允许从当前来源安装 APK。
+从 [GitHub Releases](https://github.com/metaMMY07/OpenScope/releases/latest) 下载已发布版本。ARM64 包 `OpenScope-0.4.14-arm64-v8a.apk` 用于大多数 Android 手机，安装包约 10.8 MB；最低支持 Android 10（API 29）。Android 会要求允许从当前来源安装 APK。
 
 当前 APK 使用内部测试签名，适合侧载测试；若未来签名密钥更换，可能需要先卸载旧版本才能安装新版。x86_64 包仅用于模拟器。
 
