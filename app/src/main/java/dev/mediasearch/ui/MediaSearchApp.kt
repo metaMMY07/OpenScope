@@ -53,6 +53,8 @@ fun MediaSearchApp(model: SearchViewModel) {
     val library by model.library.state.collectAsStateWithLifecycle()
     val notice by model.notice.collectAsStateWithLifecycle()
     var tab by rememberSaveable { mutableIntStateOf(0) }
+    val dockMotion = remember { FluidDockMotionState(tab) }
+    LaunchedEffect(tab) { dockMotion.animateTo(tab) }
     var browser by remember { mutableStateOf<BrowserDestination?>(null) }
     var showAbout by rememberSaveable { mutableStateOf(false) }
     var showHelp by rememberSaveable { mutableStateOf(false) }
@@ -128,7 +130,7 @@ fun MediaSearchApp(model: SearchViewModel) {
                         MinimalSearchHome(state.input, state.enabled, model::input, model::togglePlatform,
                             onSearch = ::startSearch, onSettings = { tab = 3 }, modifier = Modifier.padding(contentInsets))
                     }
-                    FluidBottomBar(tab, hazeState, Modifier.align(Alignment.BottomCenter)) { tab = it }
+                    FluidBottomBar(tab, hazeState, dockMotion, Modifier.align(Alignment.BottomCenter)) { tab = it }
                 }
             }
         } else {
@@ -355,7 +357,7 @@ fun MediaSearchApp(model: SearchViewModel) {
                     else -> SettingsScreen(onOpenAbout = { showAbout = true }, modifier = Modifier.padding(contentInsets), onDiagnostics = { showHelp = true })
                 }
                     }
-                    FluidBottomBar(tab, hazeState, Modifier.align(Alignment.BottomCenter)) { tab = it }
+                    FluidBottomBar(tab, hazeState, dockMotion, Modifier.align(Alignment.BottomCenter)) { tab = it }
                 }
             }
         }

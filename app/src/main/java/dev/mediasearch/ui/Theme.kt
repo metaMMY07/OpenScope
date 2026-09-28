@@ -27,12 +27,22 @@ fun CollectionTheme(content: @Composable () -> Unit) {
     val context = LocalContext.current
     val preferences = remember { ThemePreferences(context) }
     val dark = when (preferences.appearance) { "light" -> false; "dark" -> true; else -> isSystemInDarkTheme() }
-    val colors = when {
+    val paletteColors = when {
         preferences.useDynamicColors && Build.VERSION.SDK_INT >= 31 && dark -> dynamicDarkColorScheme(context)
         preferences.useDynamicColors && Build.VERSION.SDK_INT >= 31 -> dynamicLightColorScheme(context)
         dark -> preferences.palette.darkScheme()
         else -> preferences.palette.lightScheme()
     }
+    // Keep the chosen accent, but use neutral white for dark-mode text and icons.
+    // Material You wallpaper colors otherwise tint every default label and icon green.
+    val colors = if (dark) paletteColors.copy(
+        onBackground = Color.White,
+        onSurface = Color.White,
+        onSurfaceVariant = Color(0xFFE6E6E6),
+        onPrimaryContainer = Color.White,
+        onSecondaryContainer = Color.White,
+        onTertiaryContainer = Color.White
+    ) else paletteColors
     // App appearance may override the device setting; system-bar icons must follow it too.
     (context as? Activity)?.let { activity ->
         SideEffect {

@@ -18,8 +18,8 @@ android {
         applicationId = "dev.mediasearch"
         minSdk = 29
         targetSdk = 35
-        versionCode = 17
-        versionName = "0.4.13"
+        versionCode = 18
+        versionName = "0.4.14"
 
         testInstrumentationRunner = "dev.mediasearch.RuntimeProbe"
     }

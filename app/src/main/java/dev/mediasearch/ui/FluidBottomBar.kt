@@ -2,8 +2,7 @@ package dev.mediasearch.ui
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.Easing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
@@ -15,7 +14,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -37,11 +35,34 @@ import dev.chrisbanes.haze.hazeEffect
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 
+private val leadEasing = Easing { progress -> 1f - (1f - progress) * (1f - progress) * (1f - progress) }
+private val trailEasing = Easing { progress ->
+    if (progress < 0.5f) 4f * progress * progress * progress
+    else 1f - (-2f * progress + 2f).let { it * it * it } / 2f
+}
+
+/** Kept by the app shell so switching between the minimal and standard screens cannot reset the pill. */
+internal class FluidDockMotionState(initialTab: Int) {
+    val leftEdge = Animatable(initialTab.toFloat())
+    val rightEdge = Animatable(initialTab.toFloat())
+
+    suspend fun animateTo(tab: Int) {
+        val target = tab.toFloat()
+        if (leftEdge.value == target && rightEdge.value == target) return
+        val movingRight = target > (leftEdge.value + rightEdge.value) / 2f
+        coroutineScope {
+            launch { leftEdge.animateTo(target, tween(380, easing = if (movingRight) trailEasing else leadEasing)) }
+            launch { rightEdge.animateTo(target, tween(380, easing = if (movingRight) leadEasing else trailEasing)) }
+        }
+    }
+}
+
 /** A fluid dock with a live, source-backed frosted background. */
 @Composable
 internal fun FluidBottomBar(
     selectedTab: Int,
     hazeState: HazeState,
+    motion: FluidDockMotionState,
     modifier: Modifier = Modifier,
     onSelect: (Int) -> Unit
 ) {
@@ -51,22 +72,6 @@ internal fun FluidBottomBar(
         "账号" to AppIcons.Person,
         "设置" to AppIcons.Settings
     )
-    val leftEdge = remember { Animatable(selectedTab.toFloat()) }
-    val rightEdge = remember { Animatable(selectedTab.toFloat()) }
-    LaunchedEffect(selectedTab) {
-        val movingRight = selectedTab > (leftEdge.value + rightEdge.value) / 2f
-        coroutineScope {
-            launch {
-                leftEdge.animateTo(selectedTab.toFloat(), tween(380,
-                    easing = if (movingRight) FastOutSlowInEasing else LinearOutSlowInEasing))
-            }
-            launch {
-                rightEdge.animateTo(selectedTab.toFloat(), tween(380,
-                    easing = if (movingRight) LinearOutSlowInEasing else FastOutSlowInEasing))
-            }
-        }
-    }
-
     val colors = MaterialTheme.colorScheme
     val indicator by animateColorAsState(colors.primaryContainer, label = "导航高亮颜色")
     Column(
@@ -86,8 +91,8 @@ internal fun FluidBottomBar(
             Canvas(Modifier.fillMaxSize()) {
                 val slot = size.width / destinations.size
                 val halfWidth = minOf(44.dp.toPx(), slot * 0.40f)
-                val left = (leftEdge.value + 0.5f) * slot - halfWidth
-                val right = (rightEdge.value + 0.5f) * slot + halfWidth
+                val left = (motion.leftEdge.value + 0.5f) * slot - halfWidth
+                val right = (motion.rightEdge.value + 0.5f) * slot + halfWidth
                 drawRoundRect(
                     color = indicator,
                     topLeft = Offset(left, 9.dp.toPx()),
